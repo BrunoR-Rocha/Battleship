@@ -1,10 +1,12 @@
 import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
+import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
 
 const app = express();
 
 var mongoUtils = require('./mongoUtils');
+var User = require('./model/User');
 
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
@@ -86,22 +88,10 @@ app.post('/register', function (req,res){
             users.push(dados);
             console.log(users);
 
-            collections.collection('Battleship').insertOne(dados);
+            collections.collection('users').insertOne(dados);
 
             res.redirect('/main');
          });
-
-
-      /*
-      bcrypt.compare(password, hashedPassword, (err, isMatch) => { 
-        if( err ) { 
-            return err; 
-        } 
-          
-        // If password matches then display true 
-        console.log(isMatch); 
-      }); */ 
-      
    }
    else{
       console.log("Erro de insercao");
@@ -109,5 +99,26 @@ app.post('/register', function (req,res){
 });
 
 app.post('/login', function (req,res) {
-   res.send('verificar o login na base de dados');
+
+   var name = req.body.email;
+   var password = req.body.password;
+
+   collections = mongoUtils.getDriver();
+
+   collections.collection('users').find({email:name}).toArray(function(err, result){
+
+      if(result[0] == undefined){
+         res.redirect('/login');
+      }else{
+           // console.log(result[0].password);
+            bcrypt.compare(password, result[0].password, (err, isMatch) => { 
+               //se as palavra passe coincidir com a da base de dados
+               if(isMatch){
+                  res.redirect('/main'); // passa os valores do utilizador - Nome e email
+               }else{
+                  res.redirect('/login'); // mostrar mensagem de erro - password incorreta
+               }
+            });
+         }
+      })
 });
