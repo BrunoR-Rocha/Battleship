@@ -45,15 +45,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); 
 
 app.get('/', (req, res) => {
-   res.sendFile(__dirname + '/welcome.html');
+   res.sendFile(__dirname +"/views"+ '/welcome.html');
 });
 
 app.get('/register', (req, res) =>{
-   res.sendFile(__dirname + '/register.html');
+   res.sendFile(__dirname +"/views"+ '/register.html');
 });
 
 app.get('/login', (req, res) =>{
-   res.sendFile(__dirname + '/login.html');
+   res.sendFile(__dirname +"/views"+ '/login.html');
+});
+
+app.get('/main', (req, res) =>{
+   res.sendFile(__dirname +"/views"+ '/main.html');
 });
 
 app.post('/register', function (req,res){
@@ -81,9 +85,10 @@ app.post('/register', function (req,res){
 
             users.push(dados);
             console.log(users);
-            
-            collections.collection('battleship').insertOne(dados);
-            
+
+            collections.collection('Battleship').insertOne(dados);
+
+            res.redirect('/main');
          });
 
 
@@ -96,6 +101,7 @@ app.post('/register', function (req,res){
         // If password matches then display true 
         console.log(isMatch); 
       }); */ 
+      
    }
    else{
       console.log("Erro de insercao");

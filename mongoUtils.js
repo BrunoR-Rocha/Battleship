@@ -8,7 +8,7 @@ module.exports = {
         driver.connect("mongodb+srv://brunorocha:brunorocha@cluster0-ezxij.mongodb.net/test?retryWrites=true&w=majority",{useUnifiedTopology:true},
             function(err,client){
                 if(err) throw err;
-                database = client.db('ProjetoNodejs');
+                database = client.db('projetoNodejs');
                 console.log("Connected to the database");
                 return callback(err);
             });
