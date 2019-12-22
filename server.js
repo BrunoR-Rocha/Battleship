@@ -1,7 +1,8 @@
 import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
-import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from 'constants';
+import Vue from 'vue';
+
 
 const app = express();
 
