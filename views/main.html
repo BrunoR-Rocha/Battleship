@@ -6,15 +6,62 @@
    <meta http-equiv="X-UA-Compatible" content="ie=edge">
    <title>Battleship Game</title>
    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1 class="jumbotron text-center">
-           Battleship Game
-        </h1>
-        <h2> Ola jogador .... nome ... </h2>
-    </div>
+        <div class="title">
+           <span v-bind:style="estilo_titulo">
+              {{ titulo }}
+           </span> 
+        </div>
+     </div>
 
+     <div class="container">
+        <div class="row">
+           <a href="/mygames"><span v-bind:style="estilo_buttons">{{ my_games }}</span></a>
+        
+           <a href="/game"><span v-bind:style="estilo_buttons">{{ games }}</span></a>
+        </div>
+     </div>
+     <script>
+        var title = new Vue({
+              el:'.title',
+              data: {
+                 titulo:'BattleShip Game',
+                 estilo_titulo:{
+                    fontSize: '30px',
+                    textAlign:'center',
+                    color: 'white',
+                    backgroundColor:'darkblue',
+                    display: 'block',
+                    margin: '30px auto',
+                    border: '2px solid navy',
+                    width:'80%',
+                    padding: '20px'
+                 }
+              }
+           });
+           var row = new Vue({
+         el:'.row',
+         data:{
+            my_games:'My Games',
+            games: 'Start New Game',
+               estilo_buttons:{
+                   fontSize:'20px',
+                  display: 'block',
+                  width:'50%',
+                  textAlign: 'center',
+                  color: 'white',
+                  margin: '30px auto',
+                  backgroundColor:'blue',
+                  padding: '30px 20px',
+                  borderRadius: '15px',
+                  textDecoration:'none',
+               }
+         }
+      })
+     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
  

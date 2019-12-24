@@ -63,6 +63,13 @@ app.get('/main', (req, res) =>{
    res.sendFile(__dirname +"/views"+ '/main.html');
 });
 
+app.get('/game',(req,res)=>{
+   res.sendFile(__dirname +"/views"+ '/game.html');
+})
+
+app.get('/mygames',(req,res)=>{
+   res.sendFile(__dirname +"/views"+ '/mygames.html');
+})
 app.post('/register', function (req,res){
    var name = req.body.name;
    var email = req.body.email;
