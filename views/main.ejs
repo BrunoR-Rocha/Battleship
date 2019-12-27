@@ -14,14 +14,22 @@
            <h1>Battleship Game</h1>
         </div>
      </div>
+     <h2> Welcome <%= name %></h2>
+
 
      <div class="container">
-        <div class="row">
-           <a href="/mygames"><span>My Games</span></a>
-        <br>
-           <a href="/game"><span> Start A game</span></a>
-        </div>
-     </div>
+         <form action="/mygames">
+            <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+            <input type="hidden" id="name" name="user_name" value="<%= name %>">
+            <button type="submit" id="btn-my-games">My Games</button>
+         </form>
 
+         <form action="/game">
+            <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+            <input type="hidden" id="name" name="user_name" value="<%= name %>">
+            <button type="submit" id="btn btn-primary btn-game">Start New Game</button>
+         </form>
+         
+     </div>
 </body>
 </html>

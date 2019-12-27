@@ -30,17 +30,30 @@
         <h1>Battleship Game</h1>
     </div>
 
+    <div id="waiting" style="display:none;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Waiting for Players
+            </div>
+            <div class="panel-body">
+                <p>You are connected to the server.</p>
+            </div>
+        </div>
+    </div>
+
+
     <div class="panel-body">
 
         <!-- Player grids -->
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
-                <h3>You</h3>
-                <canvas id="canvas-grid1" width="361" height="361">Browser does not support canvas.</canvas>
+                <h3>You - <%= name %></h3>
+                <input type="hidden" name="id" id="ref" value="<%= id %>">
+                <canvas id="canvas-grid1" width="361" height="361"></canvas>
             </div>
             <div class="col-md-6 player-grid text-center">
                 <h3>Opponent</h3>
-                <canvas id="canvas-grid2" width="361" height="361">Browser does not support canvas.</canvas>
+                <canvas id="canvas-grid2" width="361" height="361"></canvas>
             </div>
         </div>
         
@@ -48,10 +61,12 @@
 
     <script>
      var socket;
-     
+
      $(document).ready(function(){
 
         socket = new io();
+        
+        socket.on('connect', handleConnection);
         
         socket.on('update',handleNewUser);
         
@@ -60,6 +75,13 @@
         socket.on('info server',handleInfoMessage);
     
     });
+
+    
+    function handleConnection(){
+        console.log('Connected to server.');
+        $('#waiting').show(); 
+        socket.emit('join',$("#ref").val());
+    }
 
      function handleNewUser(msg){
          $("#messages").append("<li style='text-decoration:underline'>"+msg+"</li>");
@@ -73,11 +95,6 @@
         $("#info_field").html("<p style='text-size:0.3em'>"+msg+"</p>");
      }
 
-     function login(){
-        $("#chat").css('display','block'); 
-        //$("#login").css('display','none'); 
-        socket.emit('join',$("#nick_name").val());
-     }
 
     var canvas = [], context = [], grid = [],
         gridHeight = 361, gridWidth = 361, gridBorder = 1,
@@ -94,6 +111,36 @@
         drawSquares(0);
         drawSquares(1);
 
+        canvas[1].addEventListener('mousemove', function(e) {
+            var pos = getCanvasCoordinates(e, canvas[1]);
+            squareHover = getSquare(pos.x, pos.y);
+            drawSquares(1);
+        });
+
+        canvas[1].addEventListener('mouseout', function(e) {
+            squareHover = { x: 1, y: 1 };
+            //drawSquares(1);
+        });
+
+        function getCanvasCoordinates(event, canvas) {
+            rect = canvas.getBoundingClientRect();
+            return {
+            x: Math.round((event.clientX - rect.left) / (rect.right - rect.left) * canvas.width),
+            y: Math.round((event.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height)
+            };
+        };
+
+
+        function getSquare(x, y) {
+            return {
+            x: Math.floor(x / (gridWidth / gridCols)),
+            y: Math.floor(y / (gridHeight / gridRows))
+            };
+        };
+                
+    function drawGrid(gridIndex) {
+            drawSquares(gridIndex);
+    };
 
     function drawSquares(gridIndex) {
     var i, j, squareX, squareY;
@@ -109,8 +156,9 @@
         context[gridIndex].fillStyle = '#7799FF'
 
         // Highlight square if it's user's turn and user hovers over an unfired on, opponent square.
-        if(j === squareHover.x && i === squareHover.y &&
-                gridIndex === 1 && grid[gridIndex].shots[i * gridCols + j] === 0 && turn) {
+        if(j === squareHover.x && i === squareHover.y// &&
+                //gridIndex === 1 && grid[gridIndex].shots[i * gridCols + j] === 0 && turn)
+        ){
           context[gridIndex].fillStyle = '#4477FF';
         }
 
@@ -118,7 +166,9 @@
       }
     }
   };
+
     </script>
+
        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
