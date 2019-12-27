@@ -7,8 +7,9 @@ function getUsers(data){
         console.log(result);
         return result[0];
     });
-    
 };
+
+
 
 module.exports = {
     getUsers
