@@ -66,18 +66,27 @@ io.on('connection',(socket) => {
 
    socket.join('waiting players');
 
-   joinWaitingPlayers();
+   //joinWaitingPlayers();
 
    socket.on('join',function(nome){
       users[socket.id] = nome;
       console.log(users[socket.id]+' joined the chatroom'); 
       console.log(users);
-      io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
+
+     /* var players = getGamersWaiting('waiting players');
+
+      if(players.length >= 2){
+         io.emit('start');
+      }*/
+      //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
   });
 });
 
 function joinWaitingPlayers() {
    var players = getGamersWaiting('waiting players');
+   
+   console.log("waiting");
+   console.log(io.sockets.adapter.rooms['waiting players']);
 
   if(players.length >= 2) {
    //console.log(players);
@@ -87,18 +96,16 @@ function joinWaitingPlayers() {
    //sair da sala de espera para iniciar o jogo
    players[0].leave('waiting players');
    players[1].leave('waiting players');
-
-   console.log("waiting");
-   console.log(io.sockets.adapter.rooms['waiting players']);
    
    console.log("game");
    //criaçao de uma sala, com um id especifico para que ambos os jogadores joguem entre si sem interferencias
-   
+
    players[0].join('game');
    players[1].join('game');
 
    console.log(io.sockets.adapter.rooms['game']);
-    /* var game = new BattleshipGame(gameIdCounter++, players[0].id, players[1].id);
+
+   /* var game = new BattleshipGame(gameIdCounter++, players[0].id, players[1].id);
  
      users[players[0].id].player = 0;
      users[players[1].id].player = 1;
@@ -112,7 +119,8 @@ function joinWaitingPlayers() {
      io.to(players[1].id).emit('update', game.getGameState(1, 1));
  
      console.log((new Date().toISOString()) + " " + players[0].id + " and " + players[1].id + " have joined game ID " + game.id);
-  */}
+   */
+   }
  }
 
  function getGamersWaiting(room) {

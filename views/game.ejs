@@ -67,6 +67,8 @@
         socket = new io();
         
         socket.on('connect', handleConnection);
+
+        socket.on('start', handleGameStart);
         
         socket.on('update',handleNewUser);
         
@@ -78,9 +80,17 @@
 
     
     function handleConnection(){
+        $('.panel-body').hide();
         console.log('Connected to server.');
         $('#waiting').show(); 
         socket.emit('join',$("#ref").val());
+    }
+
+    function handleGameStart(){
+        console.log('game is starting');
+        $('#waiting').hide();
+        $('.panel-body').show();
+        //socket.emit('',$("#ref").val());
     }
 
      function handleNewUser(msg){
@@ -105,9 +115,11 @@
 
         canvas[0] = document.getElementById('canvas-grid1');    // This player
         canvas[1] = document.getElementById('canvas-grid2');    // Opponent
+       
         context[0] = canvas[0].getContext('2d');
         context[1] = canvas[1].getContext('2d');
 
+        //desenha ambas as grelhas no ecra
         drawSquares(0);
         drawSquares(1);
 
@@ -117,11 +129,24 @@
             drawSquares(1);
         });
 
+        //
         canvas[1].addEventListener('mouseout', function(e) {
-            squareHover = { x: 1, y: 1 };
-            //drawSquares(1);
+            squareHover = { x: -1, y: -1 };
+            drawSquares(1);
         });
 
+        canvas[1].addEventListener('click', function(e) {
+
+            var pos = getCanvasCoordinates(e, canvas[1]);
+            var square = getSquare(pos.x, pos.y);
+
+            //verifica onde é que o utilizador clicou no mapa do oponente
+            console.log("Click on :");
+            console.log(square);
+
+        });
+
+        
         function getCanvasCoordinates(event, canvas) {
             rect = canvas.getBoundingClientRect();
             return {
@@ -130,7 +155,7 @@
             };
         };
 
-
+        //obtem a posiçao do quadrado que for marcado
         function getSquare(x, y) {
             return {
             x: Math.floor(x / (gridWidth / gridCols)),
@@ -141,6 +166,8 @@
     function drawGrid(gridIndex) {
             drawSquares(gridIndex);
     };
+
+    //funçao externa - para efeitos de teste
 
     function drawSquares(gridIndex) {
     var i, j, squareX, squareY;
@@ -155,10 +182,8 @@
 
         context[gridIndex].fillStyle = '#7799FF'
 
-        // Highlight square if it's user's turn and user hovers over an unfired on, opponent square.
-        if(j === squareHover.x && i === squareHover.y// &&
-                //gridIndex === 1 && grid[gridIndex].shots[i * gridCols + j] === 0 && turn)
-        ){
+        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+        if(j === squareHover.x && i === squareHover.y){
           context[gridIndex].fillStyle = '#4477FF';
         }
 
