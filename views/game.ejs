@@ -58,7 +58,6 @@
         </div>
         
     </div>
-    
     <div class="panel-body">
         <div class="chat">
         </div>
@@ -71,7 +70,6 @@
             </div>
         </form>
     </div>
-
     <script>
      var socket;
 
@@ -88,9 +86,9 @@
         socket.on('chat message server',handleNewMessage);
 
         socket.on('info server',handleInfoMessage);
-
+    
     });
-   
+
     
     function handleConnection(){
         $('.panel-body').hide();
@@ -111,29 +109,13 @@
      }
 
      function handleNewMessage(msg){
-         $(".chat").append("<li style='background-color:grey'><%= name %> : "+msg.message+"</li>");
+         $(".chat").append("<li style='background-color:grey'>"+msg.user+" : "+msg.message+"</li>");
      }
 
      function handleInfoMessage(msg){
         $("#info_field").html("<p style='text-size:0.3em'>"+msg+"</p>");
      }
 
-     jQuery(document).ready(function() {
-         var socket = io.connect();
-         var form = jQuery('#message-form');
-         var txt = jQuery('#chat_message');
-         var chat = jQuery('.chat');
-
-         form.submit(function(e) {
-            e.preventDefault();
-            socket.emit('sending message', txt.val());
-            txt.val('');
-         });
-
-         socket.on('new message', function(data){
-            chat.append('<div class="well"><%= name %> : '+data.message+'</div>');
-         });
-      });
 
     var canvas = [], context = [], grid = [],
         gridHeight = 361, gridWidth = 361, gridBorder = 1,
@@ -220,7 +202,6 @@
       }
     }
   };
-        
 
     </script>
 
