@@ -58,7 +58,18 @@
         </div>
         
     </div>
-
+    <div class="panel-body">
+        <div class="chat">
+        </div>
+        <form id="message-form" action="">
+            <div class="input-group">
+                    <input id="chat_message" class="form-control" autocomplete="off" />
+                <div class="input-group-btn">
+                    <button class="btn btn-primary">Send Message</button>
+                </div>
+            </div>
+        </form>
+    </div>
     <script>
      var socket;
 
@@ -94,11 +105,11 @@
     }
 
      function handleNewUser(msg){
-         $("#messages").append("<li style='text-decoration:underline'>"+msg+"</li>");
+         $(".chat").append("<li style='text-decoration:underline'>"+msg+"</li>");
      }
 
      function handleNewMessage(msg){
-         $("#messages").append("<li style='background-color:grey'>"+msg.user+" : "+msg.message+"</li>");
+         $(".chat").append("<li style='background-color:grey'>"+msg.user+" : "+msg.message+"</li>");
      }
 
      function handleInfoMessage(msg){

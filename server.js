@@ -14,6 +14,8 @@ var server = http.Server(app);
 var io = socketio(server);
 const bcrypt = require("bcryptjs"); 
 
+var BattleShip = require('./app/Game');
+
 const PORT = 3000;
 
 server.listen(PORT, function(){
@@ -23,6 +25,7 @@ server.listen(PORT, function(){
 var users = [];
 var actual_user = [];
 var collections;
+var gameCount = 1;
 
 app.set('views',__dirname+'/views');
 
@@ -62,7 +65,7 @@ app.get('/mygames',(req,res)=>{
 
 io.on('connection',(socket) => {
    console.log('Someone joined the server'); 
-   console.log(users);
+   //console.log(users);
 
    socket.join('waiting players');
 
@@ -70,14 +73,31 @@ io.on('connection',(socket) => {
 
    socket.on('join',function(nome){
       users[socket.id] = nome;
-      console.log(users[socket.id]+' joined the chatroom'); 
-      console.log(users);
+      //console.log(users[socket.id]+' joined the chatroom'); 
+      //console.log(users);
+      console.log(io.sockets.adapter.rooms['waiting players']);
+      var players = getGamersWaiting('waiting players');
 
-     /* var players = getGamersWaiting('waiting players');
-
+      console.log(players.length);
+      
       if(players.length >= 2){
-         io.emit('start');
-      }*/
+
+         var game = new BattleShip(gameCount, players[0].id, players[1].id);
+
+         console.log(game.players);
+
+         players[0].leave('waiting players');
+         players[1].leave('waiting players');
+
+         players[0].join('game'+ game.id);
+         players[1].join('game'+ game.id);
+
+         //console.log(io.sockets.adapter.rooms['waiting players']);
+
+         console.log(io.sockets.adapter.rooms['game'+ game.id]);
+         //io.emit('start');
+
+      }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
   });
 });
@@ -86,7 +106,7 @@ function joinWaitingPlayers() {
    var players = getGamersWaiting('waiting players');
    
    console.log("waiting");
-   console.log(io.sockets.adapter.rooms['waiting players']);
+   //console.log(io.sockets.adapter.rooms['waiting players']);
 
   if(players.length >= 2) {
    //console.log(players);
