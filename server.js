@@ -36,18 +36,18 @@ mongoUtils.conectToServer(function(){
 
 app.use(bodyParser.urlencoded({ extended: true })); 
 
-app.use(bodyParser.json()); 
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-   res.sendFile(__dirname +"/views"+ '/welcome.html');
+   res.sendFile(__dirname + "/views" + '/welcome.html');
 });
 
-app.get('/register', (req, res) =>{
-   res.sendFile(__dirname +"/views"+ '/register.html');
+app.get('/register', (req, res) => {
+   res.sendFile(__dirname + "/views" + '/register.html');
 });
 
-app.get('/login', (req, res) =>{
-   res.sendFile(__dirname +"/views"+ '/login.html');
+app.get('/login', (req, res) => {
+   res.sendFile(__dirname + "/views" + '/login.html');
 });
 
 app.get('/game',(req,res)=>{
@@ -160,8 +160,8 @@ app.post('/register', function (req,res){
    var email = req.body.email;
    var password = req.body.password;
    var password2 = req.body.password2;
-   
-   if(!name || !email || !password){
+
+   if (!name || !email || !password) {
       console.log("Incomplete Information");
    }  
    else if(password == password2){
@@ -177,19 +177,24 @@ app.post('/register', function (req,res){
                "password": hashedPassword,
             }
 
-            collections = mongoUtils.getDriver();
+      bcrypt.hash(password, 8, (err, hashedPassword) => {
+         if (err) {
+            return err;
+         }
+         var dados = {
+            "name": name,
+            "email": email,
+            "password": hashedPassword,
+         }
 
-            users.push(dados);
-            console.log(users);
+         collections = mongoUtils.getDriver();
 
-            collections.collection('users').insertOne(dados);
+         users.push(dados);
+         console.log(users);
 
             res.redirect('/main');
          });
    }
-   else{
-      console.log("Erro de insercao");
-   }   
 });
 
 app.post('/main', function (req,res) {
