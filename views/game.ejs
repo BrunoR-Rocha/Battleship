@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script
+			  src="https://code.jquery.com/jquery-3.4.1.js"
+			  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+              crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="/socket.io/socket.io.js"></script>
+    <title>Battleship Game</title>
+    <style>
+        body{
+            margin: 1em;
+        }
+        .rows{
+            display: flex;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        div{
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>Battleship Game</h1>
+    </div>
+
+    <div id="waiting" style="display:none;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Waiting for Players
+            </div>
+            <div class="panel-body">
+                <p>You are connected to the server.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel-body">
+
+        <!-- Player grids -->
+        <div class="rows">
+            <div class="col-md-6 player-grid text-center">
+                <h3>You - <%= name %></h3>
+                <input type="hidden" name="id" id="ref" value="<%= id %>">
+                <canvas id="canvas-grid1" width="361" height="361"></canvas>
+            </div>
+            <div class="col-md-6 player-grid text-center">
+                <h3>Opponent</h3>
+                <canvas id="canvas-grid2" width="361" height="361"></canvas>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="panel-body">
+        <div class="chat">
+        </div>
+        <form id="message-form" action="">
+            <div class="input-group">
+                    <input id="chat_message" class="form-control" autocomplete="off" />
+                <div class="input-group-btn">
+                    <button class="btn btn-primary">Send Message</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+     var socket;
+
+     $(document).ready(function(){
+
+        socket = new io();
+        
+        socket.on('connect', handleConnection);
+
+        socket.on('start', handleGameStart);
+        
+        socket.on('update',handleNewUser);
+        
+        socket.on('chat message server',handleNewMessage);
+
+        socket.on('info server',handleInfoMessage);
+
+    });
+   
+    
+    function handleConnection(){
+        $('.panel-body').hide();
+        console.log('Connected to server.');
+        $('#waiting').show(); 
+        socket.emit('join',$("#ref").val());
+    }
+
+    function handleGameStart(){
+        console.log('game is starting');
+        $('#waiting').hide();
+        $('.panel-body').show();
+        //socket.emit('',$("#ref").val());
+    }
+
+     function handleNewUser(msg){
+         $(".chat").append("<li style='text-decoration:underline'>"+msg+"</li>");
+     }
+
+     function handleNewMessage(msg){
+         $(".chat").append("<li style='background-color:grey'><%= name %> : "+msg.message+"</li>");
+     }
+
+     function handleInfoMessage(msg){
+        $("#info_field").html("<p style='text-size:0.3em'>"+msg+"</p>");
+     }
+
+     jQuery(document).ready(function() {
+         var socket = io.connect();
+         var form = jQuery('#message-form');
+         var txt = jQuery('#chat_message');
+         var chat = jQuery('.chat');
+
+         form.submit(function(e) {
+            e.preventDefault();
+            socket.emit('sending message', txt.val());
+            txt.val('');
+         });
+
+         socket.on('new message', function(data){
+            chat.append('<div class="well"><%= name %> : '+data.message+'</div>');
+         });
+      });
+
+    var canvas = [], context = [], grid = [],
+        gridHeight = 361, gridWidth = 361, gridBorder = 1,
+        gridRows = 10, gridCols = 10, markPadding = 10, shipPadding = 3,
+        squareHeight = (gridHeight - gridBorder * gridRows - gridBorder) / gridRows,
+        squareWidth = (gridWidth - gridBorder * gridCols - gridBorder) / gridCols,
+        turn = false, gameStatus, squareHover = { x: -1, y: -1 };
+
+        canvas[0] = document.getElementById('canvas-grid1');    // This player
+        canvas[1] = document.getElementById('canvas-grid2');    // Opponent
+       
+        context[0] = canvas[0].getContext('2d');
+        context[1] = canvas[1].getContext('2d');
+
+        //desenha ambas as grelhas no ecra
+        drawSquares(0);
+        drawSquares(1);
+
+        canvas[1].addEventListener('mousemove', function(e) {
+            var pos = getCanvasCoordinates(e, canvas[1]);
+            squareHover = getSquare(pos.x, pos.y);
+            drawSquares(1);
+        });
+
+        //
+        canvas[1].addEventListener('mouseout', function(e) {
+            squareHover = { x: -1, y: -1 };
+            drawSquares(1);
+        });
+
+        canvas[1].addEventListener('click', function(e) {
+
+            var pos = getCanvasCoordinates(e, canvas[1]);
+            var square = getSquare(pos.x, pos.y);
+
+            //verifica onde é que o utilizador clicou no mapa do oponente
+            console.log("Click on :");
+            console.log(square);
+
+        });
+
+        
+        function getCanvasCoordinates(event, canvas) {
+            rect = canvas.getBoundingClientRect();
+            return {
+            x: Math.round((event.clientX - rect.left) / (rect.right - rect.left) * canvas.width),
+            y: Math.round((event.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height)
+            };
+        };
+
+        //obtem a posiçao do quadrado que for marcado
+        function getSquare(x, y) {
+            return {
+            x: Math.floor(x / (gridWidth / gridCols)),
+            y: Math.floor(y / (gridHeight / gridRows))
+            };
+        };
+                
+    function drawGrid(gridIndex) {
+            drawSquares(gridIndex);
+    };
+
+    //funçao externa - para efeitos de teste
+
+    function drawSquares(gridIndex) {
+    var i, j, squareX, squareY;
+
+    context[gridIndex].fillStyle = '#222222'
+    context[gridIndex].fillRect(0, 0, gridWidth, gridHeight);
+
+    for(i = 0; i < gridRows; i++) {
+      for(j = 0; j < gridCols; j++) {
+        squareX = j * (squareWidth + gridBorder) + gridBorder;
+        squareY = i * (squareHeight + gridBorder) + gridBorder;
+
+        context[gridIndex].fillStyle = '#7799FF'
+
+        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+        if(j === squareHover.x && i === squareHover.y){
+          context[gridIndex].fillStyle = '#4477FF';
+        }
+
+        context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
+      }
+    }
+  };
+        
+
+    </script>
+
+       <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>

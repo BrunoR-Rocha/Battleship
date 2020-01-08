@@ -1,4 +1,5 @@
 var mongoUtil = require('../mongoUtils');
+var mongoose = require('mongoose');
 
 function getUsers(data){
     
@@ -7,9 +8,17 @@ function getUsers(data){
         console.log(result);
         return result[0];
     });
-    
 };
 
+function createUsers(){
+    mongoose.model('User',{
+        name: String,
+        email: String,
+        password: String
+    });
+}
+
 module.exports = {
-    getUsers
+    getUsers,
+    createUsers
 };
