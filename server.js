@@ -67,22 +67,22 @@ io.on('connection',(socket) => {
    console.log('Someone joined the server'); 
    //console.log(users);
 
-   socket.join('waiting players');
-
-   //joinWaitingPlayers();
+   socket.join('espera');
 
    socket.on('join',function(){
 
+      console.log(io.sockets.adapter.rooms['espera']);
+
       users[socket.id] = {
-         inGame: null,
+         jogo: null,
          numero: null
        }; 
 
       // users[socket.id] = nome;
-      //console.log(users[socket.id]+' joined the chatroom'); 
-      //console.log(users);
-      //console.log(io.sockets.adapter.rooms['waiting players']);
-      var players = getGamersWaiting('waiting players');
+      // console.log(users[socket.id]+' joined the chatroom'); 
+      // console.log(users);
+      // console.log(io.sockets.adapter.rooms['waiting players']);
+      var players = getGamersWaiting('espera');
 
       console.log(players.length);
       
@@ -92,27 +92,48 @@ io.on('connection',(socket) => {
 
          //console.log(game.players);
 
-         players[0].leave('waiting players');
-         players[1].leave('waiting players');
+         players[0].leave('espera');
+         players[1].leave('espera');
 
          players[0].join('game'+ game.id);
          players[1].join('game'+ game.id);
 
-        // console.log(users);
-        
          users[players[0].id].numero = 0;
+         users[players[0].id].jogo = game;
          users[players[1].id].numero = 1;
-         users[players[0].id].inGame = game;
-         users[players[1].id].inGame = game;
+         users[players[1].id].jogo = game;
+         //console.log(players[0]);
 
-         console.log(users);
-         
+         //console.log(users[players[0].id].jogo);
+
          io.to('game' + game.id).emit('start', game.id);
-         //console.log(io.sockets.adapter.rooms['waiting players']);
          
-         //console.log(io.sockets.adapter.rooms['game'+ game.id]);
+         console.log(io.sockets.adapter.rooms['game'+ game.id]);
       }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
+  });
+  socket.on('message', function(message){
+
+      if(users[socket.id].jogo != null && message) {
+
+            //mostra a mensagem para o utilizador conectado na sala 
+            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('message', {
+            name: 'Adversario',
+            message: message,
+            });
+
+            //mostra a mensagem para o utilizador atual, de modo a manter a organizaçao no chat
+            io.to(socket.id).emit('message', {
+            name: 'Eu',
+            message: message,
+            });
+      }
+  });
+
+  socket.on('tiro', function(local){
+
+      console.log("tiro efetuado no " + local.x +' , '+local.y);
+      
   });
 });
 

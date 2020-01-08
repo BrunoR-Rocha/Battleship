@@ -59,8 +59,7 @@
         
     </div>
     <div class="panel-body">
-        <div class="chat">
-        </div>
+        <div class="chat"></div>
         <form id="message-form" action="">
             <div class="input-group">
                     <input id="chat_message" class="form-control" autocomplete="off" />
@@ -83,12 +82,17 @@
         
         socket.on('update',handleNewUser);
         
-        socket.on('chat message server',handleNewMessage);
+        socket.on('message',handleNewMessage);
 
         socket.on('info server',handleInfoMessage);
     
     });
 
+    $('#message-form').submit(function() {
+        socket.emit('message', $('#chat_message').val());
+        $('#chat_message').val('');
+        return false;
+    });
     
     function handleConnection(){
         $('.panel-body').hide();
@@ -109,7 +113,7 @@
      }
 
      function handleNewMessage(msg){
-         $(".chat").append("<li style='background-color:grey'>"+msg.user+" : "+msg.message+"</li>");
+         $(".chat").append("<li style='background-color:grey'>"+msg.name+" : "+msg.message+"</li>");
      }
 
      function handleInfoMessage(msg){
@@ -149,12 +153,8 @@
         canvas[1].addEventListener('click', function(e) {
 
             var pos = getCanvasCoordinates(e, canvas[1]);
-            var square = getSquare(pos.x, pos.y);
-
-            //verifica onde é que o utilizador clicou no mapa do oponente
-            console.log("Click on :");
-            console.log(square);
-
+            var local = getSquare(pos.x, pos.y);
+            socket.emit('tiro', local);
         });
 
         
