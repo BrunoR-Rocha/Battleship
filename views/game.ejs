@@ -70,14 +70,17 @@
         <p>
             <!-- <button><%= ships[i].id %></button> -->
             <% if (ships[i].amount == 0) { %>
-            <button disabled type="button"
-                class="btn btn-default btn-xs">Select</button>
-            <% } %>
-            <button @click="setSelectedShip(ship)" :disabled="ship[i].amount == 0" type="button"
-                class="btn btn-default btn-xs">Select</button>
+            <button disabled type="button" class="btn btn-default btn-xs" value="<%= ships[i].size %>">Select</button>
             <img src="<%= ships[i].image %>" alt="" height="60px">
             <%= ships[i].type %>
             <%= ships[i].amount %>x
+            <% }  else {%>
+            <button @click="setSelectedShip(ship)" :disabled="ship[i].amount == 0" type="button"
+                class="btn btn-default btn-xs" value="<%= ships[i].size %>">Select</button>
+            <img src="<%= ships[i].image %>" alt="" height="60px">
+            <%= ships[i].type %>
+            <%= ships[i].amount %>x
+            <% } %>
         </p>
         <% } %>
 
@@ -111,6 +114,13 @@
 
             socket.on('info server', handleInfoMessage);
 
+        });
+
+
+        var val = 0;
+
+        $(".btn-default").click(function (e) {
+            val = parseInt($(this).attr('value'));
         });
 
         $('#message-form').submit(function () {
@@ -176,6 +186,29 @@
         drawSquares(0);
         drawSquares(1);
 
+        canvas[0].addEventListener('mousemove', function (e) {
+            var pos = getCanvasCoordinates(e, canvas[0]);
+            squareHover = getSquare(pos.x, pos.y);
+            drawSquares(0);
+        });
+
+        //
+        canvas[0].addEventListener('mouseout', function (e) {
+            squareHover = {
+                x: -1,
+                y: -1
+            };
+            drawSquares(0);
+        });
+
+        canvas[0].addEventListener('click', function (e) {
+
+            var pos = getCanvasCoordinates(e, canvas[0]);
+            var local = getSquare(pos.x, pos.y);
+            console.log(local);
+            socket.emit('tiro', local);
+        });
+
         canvas[1].addEventListener('mousemove', function (e) {
             var pos = getCanvasCoordinates(e, canvas[1]);
             squareHover = getSquare(pos.x, pos.y);
@@ -235,8 +268,17 @@
                     context[gridIndex].fillStyle = '#7799FF'
 
                     // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
-                    if (j === squareHover.x && i === squareHover.y) {
+                    /* if (j === squareHover.x && i === squareHover.y) {
                         context[gridIndex].fillStyle = '#4477FF';
+                    } */
+                    if (gridIndex == 0) {
+                        if (j >= squareHover.x && j < squareHover.x + val && i === squareHover.y) {
+                            context[gridIndex].fillStyle = '#4477FF';
+                        }
+                    } else {
+                        if (j === squareHover.x && i === squareHover.y) {
+                            context[gridIndex].fillStyle = '#4477FF';
+                        }
                     }
 
                     context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
