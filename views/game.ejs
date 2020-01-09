@@ -169,6 +169,14 @@
             $("#info_field").html("<p style='text-size:0.3em'>" + msg + "</p>");
         }
 
+        var save = [];
+
+        for (var i = 0; i < 10; i++) {
+            save[i] = [];
+            for (var j = 0; j < 10; j++) {
+                save[i][j] = 0;
+            }
+        }
 
         var canvas = [],
             context = [],
@@ -180,7 +188,7 @@
             gridCols = 10,
             markPadding = 10,
             shipPadding = 3,
-            squareHeight = (gridHeight - gridBorder * gridRows - gridBorder) / gridRows,
+            squareHeight = (gridHeight - gridBorder * gridBorder) / gridRows,
             squareWidth = (gridWidth - gridBorder * gridCols - gridBorder) / gridCols,
             turn = false,
             gameStatus, squareHover = {
@@ -219,6 +227,36 @@
             var local = getSquare(pos.x, pos.y);
             console.log(local);
             socket.emit('tiro', local);
+
+
+            var found = false;
+            for (var i = 0; i < val; i++) {
+                if (save[local.y][local.x + i] == 1) {
+                    found = true;
+                }
+            }
+
+
+            if (found == false) {
+
+                for (var i = 0; i < val; i++) {
+                    if ($('#rotate').text() == "Vertical") {
+                        save[local.y][local.x + i] = 1;
+                    } else {
+                        save[local.y + i][local.x] = 1;
+
+                    }
+                }
+
+            }
+
+            // for (var i = 0; i < 10; i++) {
+            //     for (var j = 0; j < 10; j++) {
+            //         console.log(save[i][j]);
+            //     }
+            // }
+
+
         });
 
         canvas[1].addEventListener('mousemove', function (e) {
@@ -264,6 +302,9 @@
             drawSquares(gridIndex);
         };
 
+
+
+
         //funçao externa - para efeitos de teste
 
         function drawSquares(gridIndex) {
@@ -278,27 +319,32 @@
                     squareY = i * (squareHeight + gridBorder) + gridBorder;
 
                     context[gridIndex].fillStyle = '#7799FF'
-                    if ($('#rotate').text() == "Vertical") {
+
+                    if (save[i][j] != 1) {
                         // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+                        // Para grid do utilizador atual
                         if (gridIndex == 0) {
-                            if (j >= squareHover.x && j < squareHover.x + val && i === squareHover.y) {
+                            // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
+                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val &&
+                                i ===
+                                squareHover.y) {
                                 context[gridIndex].fillStyle = '#4477FF';
+                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
+                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y +
+                                val &&
+                                j === squareHover.x) {
+                                context[gridIndex].fillStyle = '#4477FF';
+
                             }
-                        } else {
+                        }
+                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima
+                        if (gridIndex == 1) {
                             if (j === squareHover.x && i === squareHover.y) {
                                 context[gridIndex].fillStyle = '#4477FF';
                             }
                         }
-                    } else {
-                        if (gridIndex == 0) {
-                            if (i >= squareHover.y && i < squareHover.y + val && j === squareHover.x) {
-                                context[gridIndex].fillStyle = '#4477FF';
-                            }
-                        } else {
-                            if (j === squareHover.x && i === squareHover.y) {
-                                context[gridIndex].fillStyle = '#4477FF';
-                            }
-                        }
+                    } else if (gridIndex == 0) {
+                        context[gridIndex].fillStyle = 'red';
                     }
 
                     context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
