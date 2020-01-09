@@ -71,18 +71,11 @@
         <% for(var i=0; i < ships.length; i++) { %>
         <p>
 
-            <% if (ships[i].amount == 0) { %>
-            <button disabled type="button" class="btn btn-default btn-xs" value="<%= ships[i].size %>">Select</button>
+            <button type="button" class="btn btn-default btn-xs" amount="<%= ships[i].amount %>"
+                value="<%= ships[i].size %>">Select</button>
             <img src="<%= ships[i].image %>" alt="" height="60px">
             <%= ships[i].type %>
             <%= ships[i].amount %>x
-            <% }  else {%>
-            <button @click="setSelectedShip(ship)" :disabled="ship[i].amount == 0" type="button"
-                class="btn btn-default btn-xs" value="<%= ships[i].size %>">Select</button>
-            <img src="<%= ships[i].image %>" alt="" height="60px">
-            <%= ships[i].type %>
-            <%= ships[i].amount %>x
-            <% } %>
         </p>
         <% } %>
 
@@ -119,10 +112,17 @@
 
 
         var val = 0;
+        var amo = 0;
+        var current_boat = "";
 
         $('.btn-default').click(function (e) {
+
             val = parseInt($(this).attr('value'));
+            amo = parseInt($(this).attr('amount'));
+            current_boat = this;
+
         });
+
 
         $('#rotate').click(function () {
 
@@ -134,6 +134,8 @@
                 $this.text('Horizontal');
             }
         });
+
+
 
         $('#message-form').submit(function () {
             socket.emit('message', $('#chat_message').val());
@@ -229,6 +231,14 @@
             console.log(local);
             socket.emit('tiro', local);
 
+
+
+            $(current_boat).attr('amount', parseInt($(current_boat).attr('amount')) - 1);
+            if ($(current_boat).attr('amount') == 0) {
+                $(current_boat).attr('disabled', true);
+            }
+
+
             // Vendo se encontrou barcos pelo caminho
             var found = false;
             for (var i = 0; i < val; i++) {
@@ -241,21 +251,28 @@
             for (var i = 0; i < val; i++) {
                 if (local.x + i >= 10) {
                     wall = true;
+                } else if (local.y + i >= 10) {
+                    wall = true;
                     console.log(wall);
+
                 }
             }
 
-            // Se não encontrou barcos, "pinta"
-            if (found == false && wall == false) {
-                for (var i = 0; i < val; i++) {
-                    if ($('#rotate').text() == "Vertical") {
-                        save[local.y][local.x + i] = 1;
-                    } else {
-                        save[local.y + i][local.x] = 1;
 
+            if (amo > 0) {
+                // Se não encontrou barcos, "pinta"
+                if (found == false && wall == false) {
+                    for (var i = 0; i < val; i++) {
+                        if ($('#rotate').text() == "Vertical") {
+                            save[local.y][local.x + i] = 1;
+                        } else {
+                               save[local.y + i][local.x] = 1;
+
+                        }
                     }
-                }
+                    amo--;
 
+                }
             }
 
             // for (var i = 0; i < 10; i++) {
