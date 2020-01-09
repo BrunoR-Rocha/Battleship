@@ -66,9 +66,11 @@
 
     <div class="col-md-4">
         <h3>Your ships</h3>
+        <button type="button" id="rotate">Horizontal</button>
+
         <% for(var i=0; i < ships.length; i++) { %>
         <p>
-            <!-- <button><%= ships[i].id %></button> -->
+
             <% if (ships[i].amount == 0) { %>
             <button disabled type="button" class="btn btn-default btn-xs" value="<%= ships[i].size %>">Select</button>
             <img src="<%= ships[i].image %>" alt="" height="60px">
@@ -98,11 +100,9 @@
     </div>
 
     <script>
-
         var socket;
 
         $(document).ready(function () {
-
             socket = new io();
 
             socket.on('connect', handleConnection);
@@ -120,8 +120,19 @@
 
         var val = 0;
 
-        $(".btn-default").click(function (e) {
+        $('.btn-default').click(function (e) {
             val = parseInt($(this).attr('value'));
+        });
+
+        $('#rotate').click(function () {
+
+            var $this = $(this);
+            $this.toggleClass('rotate');
+            if ($this.hasClass('rotate')) {
+                $this.text('Vertical');
+            } else {
+                $this.text('Horizontal');
+            }
         });
 
         $('#message-form').submit(function () {
@@ -158,6 +169,14 @@
             $("#info_field").html("<p style='text-size:0.3em'>" + msg + "</p>");
         }
 
+        var save = [];
+
+        for (var i = 0; i < 10; i++) {
+            save[i] = [];
+            for (var j = 0; j < 10; j++) {
+                save[i][j] = 0;
+            }
+        }
 
         var canvas = [],
             context = [],
@@ -169,7 +188,7 @@
             gridCols = 10,
             markPadding = 10,
             shipPadding = 3,
-            squareHeight = (gridHeight - gridBorder * gridRows - gridBorder) / gridRows,
+            squareHeight = (gridHeight - gridBorder * gridBorder) / gridRows,
             squareWidth = (gridWidth - gridBorder * gridCols - gridBorder) / gridCols,
             turn = false,
             gameStatus, squareHover = {
@@ -209,6 +228,43 @@
             var local = getSquare(pos.x, pos.y);
             console.log(local);
             socket.emit('tiro', local);
+
+            // Vendo se encontrou barcos pelo caminho
+            var found = false;
+            for (var i = 0; i < val; i++) {
+                if (save[local.y][local.x + i] == 1) {
+                    found = true;
+                }
+            }
+
+            var wall = false;
+            for (var i = 0; i < val; i++) {
+                if (local.x + i >= 10) {
+                    wall = true;
+                    console.log(wall);
+                }
+            }
+
+            // Se não encontrou barcos, "pinta"
+            if (found == false && wall == false) {
+                for (var i = 0; i < val; i++) {
+                    if ($('#rotate').text() == "Vertical") {
+                        save[local.y][local.x + i] = 1;
+                    } else {
+                        save[local.y + i][local.x] = 1;
+
+                    }
+                }
+
+            }
+
+            // for (var i = 0; i < 10; i++) {
+            //     for (var j = 0; j < 10; j++) {
+            //         console.log(save[i][j]);
+            //     }
+            // }
+
+
         });
 
         canvas[1].addEventListener('mousemove', function (e) {
@@ -254,6 +310,9 @@
             drawSquares(gridIndex);
         };
 
+
+
+
         //funçao externa - para efeitos de teste
 
         function drawSquares(gridIndex) {
@@ -269,18 +328,31 @@
 
                     context[gridIndex].fillStyle = '#7799FF'
 
-                    // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
-                    /* if (j === squareHover.x && i === squareHover.y) {
-                        context[gridIndex].fillStyle = '#4477FF';
-                    } */
-                    if (gridIndex == 0) {
-                        if (j >= squareHover.x && j < squareHover.x + val && i === squareHover.y) {
-                            context[gridIndex].fillStyle = '#4477FF';
+                    if (save[i][j] != 1) {
+                        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+                        // Para grid do utilizador atual
+                        if (gridIndex == 0) {
+                            // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
+                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val &&
+                                i ===
+                                squareHover.y) {
+                                context[gridIndex].fillStyle = '#4477FF';
+                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
+                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y +
+                                val &&
+                                j === squareHover.x) {
+                                context[gridIndex].fillStyle = '#4477FF';
+
+                            }
                         }
-                    } else {
-                        if (j === squareHover.x && i === squareHover.y) {
-                            context[gridIndex].fillStyle = '#4477FF';
+                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima
+                        if (gridIndex == 1) {
+                            if (j === squareHover.x && i === squareHover.y) {
+                                context[gridIndex].fillStyle = '#4477FF';
+                            }
                         }
+                    } else if (gridIndex == 0) {
+                        context[gridIndex].fillStyle = 'red';
                     }
 
                     context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
