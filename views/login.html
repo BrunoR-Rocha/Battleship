@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+   <title>Battleship Game</title>
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+</head>
+<body>
+   <style>
+      .row {
+          width: 80%;
+          font-size: 30px;
+          margin: 0 auto;
+          cursor: pointer;
+      }
+      
+      .row .formulario {
+          margin-bottom: 0;
+          margin:auto;
+          width: 80%;
+      }
+
+  </style>
+   <div class="container">
+      <div class="title">
+         <span v-bind:style="estilo_titulo">
+            {{ titulo }}
+         </span> 
+      </div>
+   </div>
+      
+   <div class="container">
+      <div class="row">
+         <h2 class="mx-auto text-center"><span v-bind:style="estilo_buttons">{{User_login}}</span></h2>
+         <form class="formulario" action="/main" method="post">
+
+            <div class="form-group">
+               <label for="email">{{email}}</label>
+               <input class="form-control" type="email" name="email" id="email" placeholder="Email"/>
+            </div>
+            
+            <div class="form-group">
+               <label for="pass">{{pass}}</label>
+               <input class="form-control" type="password" name="password" id="pass" placeholder="Password"/>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Login</button>
+            <a href="/register"><span v-bind:style="register">{{account}}</span></a>
+         </form>
+
+      </div>
+   </div>
+      
+   <script>
+      var title = new Vue({
+            el:'.title',
+            data: {
+               titulo:'BattleShip Game',
+               
+               estilo_titulo:{
+                  fontSize: '30px',
+                  textAlign:'center',
+                  color: 'white',
+                  backgroundColor:'darkblue',
+                  display: 'block',
+                  margin: '30px auto',
+                  border: '2px solid navy',
+                  width:'80%',
+                  padding: '20px'
+               }
+            }
+         });
+      var row = new Vue({
+         el:'.row',
+         data:{
+            User_login: 'User Login',
+            email: 'Email',
+            pass: 'Password',
+            account:'Dont have an account?',
+               estilo_buttons:{
+                  display: 'block',
+                  textAlign: 'center',
+                  color: 'white',
+                  margin: 'auto',
+                  backgroundColor:'lightblue',
+                  padding: '30px 30px',
+                  width:'80%'
+               },
+               register:{
+                  fontSize:'15px',
+               }
+         }
+      });
+
+   </script>
+      
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+
+   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
