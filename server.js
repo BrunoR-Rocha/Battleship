@@ -129,7 +129,7 @@ io.on('connection', (socket) => {
 
       if (players.length >= 2) {
 
-         var game = new BattleShip(gameCount, players[0].id, players[1].id);
+         var game = new BattleShip(gameCount++, players[0].id, players[1].id);
 
          //console.log(game.players);
 
@@ -145,10 +145,7 @@ io.on('connection', (socket) => {
          users[players[1].id].jogo = game;
          //console.log(players[0]);
 
-         //console.log(users[players[0].id].jogo);
-
          io.to('game' + game.id).emit('start', game.id);
-
          console.log(io.sockets.adapter.rooms['game' + game.id]);
       }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
@@ -156,7 +153,7 @@ io.on('connection', (socket) => {
    socket.on('message', function (message) {
 
       if (users[socket.id].jogo != null && message) {
-
+         
          //mostra a mensagem para o utilizador conectado na sala 
          socket.broadcast.to('game' + users[socket.id].jogo.id).emit('message', {
             name: 'Adversario',
@@ -213,12 +210,10 @@ app.post('/register', function (req, res) {
 
          collections = mongoUtils.getDriver();
 
-         users.push(dados);
-         console.log(users);
-
          collections.collection('users').insertOne(dados);
 
-         res.redirect('/main');
+         res.redirect('/login');
+
       });
    } else {
       console.log("Erro de insercao");
