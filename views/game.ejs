@@ -100,7 +100,6 @@
     </div>
 
     <script>
-
         var socket;
 
         $(document).ready(function () {
@@ -230,7 +229,7 @@
             console.log(local);
             socket.emit('tiro', local);
 
-
+            // Vendo se encontrou barcos pelo caminho
             var found = false;
             for (var i = 0; i < val; i++) {
                 if (save[local.y][local.x + i] == 1) {
@@ -238,9 +237,16 @@
                 }
             }
 
+            var wall = false;
+            for (var i = 0; i < val; i++) {
+                if (local.x + i >= 10) {
+                    wall = true;
+                    console.log(wall);
+                }
+            }
 
-            if (found == false) {
-
+            // Se não encontrou barcos, "pinta"
+            if (found == false && wall == false) {
                 for (var i = 0; i < val; i++) {
                     if ($('#rotate').text() == "Vertical") {
                         save[local.y][local.x + i] = 1;
