@@ -1,4 +1,3 @@
-
 var express = require('express');
 var http = require('http');
 var ejs = require('ejs');
@@ -129,7 +128,7 @@ io.on('connection', (socket) => {
 
       if (players.length >= 2) {
 
-         var game = new BattleShip(gameCount, players[0].id, players[1].id);
+         var game = new BattleShip(gameCount++, players[0].id, players[1].id);
 
          //console.log(game.players);
 

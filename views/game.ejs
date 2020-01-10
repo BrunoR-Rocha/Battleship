@@ -244,9 +244,11 @@
             for (var i = 0; i < val; i++) {
                 if (save[local.y][local.x + i] == 1) {
                     found = true;
+                } else if (save[local.y + i][local.x] == 1) {
+                    found = true;
                 }
             }
-
+            // Vendo se encontrou paredes no caminho 
             var wall = false;
             for (var i = 0; i < val; i++) {
                 if (local.x + i >= 10) {
@@ -266,7 +268,7 @@
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
                         } else {
-                               save[local.y + i][local.x] = 1;
+                            save[local.y + i][local.x] = 1;
 
                         }
                     }
