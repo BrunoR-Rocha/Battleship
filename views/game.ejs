@@ -68,6 +68,7 @@
         <h3>Your ships</h3>
         <button type="button" id="rotate">Horizontal</button>
 
+        <% var shipsTotal = 0 %>
         <% for(var i=0; i < ships.length; i++) { %>
         <p>
 
@@ -76,6 +77,7 @@
             <img src="<%= ships[i].image %>" alt="" height="60px">
             <%= ships[i].type %>
             <%= ships[i].amount %>x
+
         </p>
         <% } %>
 
@@ -114,6 +116,7 @@
         var val = 0;
         var amo = 0;
         var current_boat = "";
+        var shipOnBoard = 0;
 
         $('.btn-default').click(function (e) {
 
@@ -134,8 +137,6 @@
                 $this.text('Horizontal');
             }
         });
-
-
 
         $('#message-form').submit(function () {
             socket.emit('message', $('#chat_message').val());
@@ -276,12 +277,14 @@
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
+
                         } else {
                             save[local.y + i][local.x] = 1;
 
                         }
                     }
                     amo--;
+                    shipOnBoard = shipOnBoard + val;
 
                 }
             }
@@ -374,13 +377,13 @@
                             }
                         }
                         // Grid do adversário "pinta" apenas o quadrado que é passdo por cima
-                        if (gridIndex == 1) {
+                        if (gridIndex == 1 && shipOnBoard >= 14) {
                             if (j === squareHover.x && i === squareHover.y) {
                                 context[gridIndex].fillStyle = '#4477FF';
                             }
                         }
                     } else if (gridIndex == 0) {
-                        context[gridIndex].fillStyle = 'red';
+                        context[gridIndex].fillStyle = '#4477FF';
                     }
 
                     context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
