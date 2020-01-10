@@ -242,19 +242,30 @@
             // Vendo se encontrou barcos pelo caminho
             var found = false;
             for (var i = 0; i < val; i++) {
-                if (save[local.y][local.x + i] == 1) {
-                    found = true;
+                if ($('#rotate').text() == "Horizontal") {
+                    if (save[local.y + i][local.x] == 1) {
+                        found = true;
+
+                    }
+                }
+                if ($('#rotate').text() == "Vertical") {
+                    if (save[local.y][local.x + i] == 1) {
+                        found = true;
+                    }
                 }
             }
-
+            // Vendo se encontrou paredes no caminho 
             var wall = false;
             for (var i = 0; i < val; i++) {
-                if (local.x + i >= 10) {
-                    wall = true;
-                } else if (local.y + i >= 10) {
-                    wall = true;
-                    console.log(wall);
-
+                if ($('#rotate').text() == "Vertical") {
+                    if (local.x + i >= 10) {
+                        wall = true;
+                        console.log(local.x + i);
+                    }
+                } else {
+                    if (local.y + i >= 10) {
+                        wall = true;
+                    }
                 }
             }
 
@@ -266,7 +277,7 @@
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
                         } else {
-                               save[local.y + i][local.x] = 1;
+                            save[local.y + i][local.x] = 1;
 
                         }
                     }
