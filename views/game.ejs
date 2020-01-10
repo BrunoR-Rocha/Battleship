@@ -49,6 +49,8 @@
     <div class="panel-body">
 
         <!-- Player grids -->
+        <h4 id="not-ready"><%= name %> is not ready</h4>
+        <h4 id="ready"><%= name %> is ready</h4>
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -148,6 +150,8 @@
         function handleConnection() {
             $('.panel-body').hide();
             $('.col-md-4').hide();
+            $('#not-ready').hide();
+            $('#ready').hide();
             console.log('Connected to server.');
             $('#waiting').show();
             socket.emit('join', $("#ref").val());
@@ -158,9 +162,14 @@
             $('#waiting').hide();
             $('.panel-body').show();
             $('.col-md-4').show();
+            $('#not-ready').show();
+            $('#ready').hide();
             //socket.emit('',$("#ref").val());
         }
-
+        function ready() {
+            $('#not-ready').hide();
+            $('#ready').show();
+        }
         function handleNewUser(msg) {
             $(".chat").append("<li style='text-decoration:underline'>" + msg + "</li>");
         }
@@ -301,6 +310,7 @@
                 console.log("true");
                 shipOnBoard++;
                 socket.emit('pronto');
+                ready();
             }
 
 
