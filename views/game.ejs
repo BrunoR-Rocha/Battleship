@@ -359,37 +359,40 @@
 
                     context[gridIndex].fillStyle = '#7799FF'
 
-                    if (save[i][j] != 1) {
-                        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
-                        // Para grid do utilizador atual
-                        if (gridIndex == 0) {
-                            // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
-                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val &&
-                                i ===
-                                squareHover.y) {
-                                context[gridIndex].fillStyle = '#4477FF';
-                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
-                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y +
-                                val &&
-                                j === squareHover.x) {
-                                context[gridIndex].fillStyle = '#4477FF';
-
-                            }
-                        }
-                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima
                         if (gridIndex == 1 && shipOnBoard >= 14) {
                             if (j === squareHover.x && i === squareHover.y) {
-                                context[gridIndex].fillStyle = '#4477FF';
-                            }
-                        }
-                    } else if (gridIndex == 0) {
-                        context[gridIndex].fillStyle = '#4477FF';
-                    }
 
-                    context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
+                                context[gridIndex].fillStyle = '#4477FF';
+                                }
+                            }
+                    if (save[i][j] != 1) {
+                            // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+                            // Para grid do utilizador atual
+                            if (gridIndex == 0) {
+                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
+                                if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x +
+                                    val &&
+                                    i ===
+                                    squareHover.y) {
+                                    context[gridIndex].fillStyle = '#4477FF';
+                                    // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
+                                } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover
+                                    .y +
+                                    val &&
+                                    j === squareHover.x) {
+                                    context[gridIndex].fillStyle = '#4477FF';
+
+                                }
+                            }
+                            // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
+                        } else if (gridIndex == 0) {
+                            context[gridIndex].fillStyle = '#4477FF';
+                        }
+
+                        context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
+                    }
                 }
-            }
-        };
+            };
     </script>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
