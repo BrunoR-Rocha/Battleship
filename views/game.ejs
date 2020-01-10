@@ -10,6 +10,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 
 
     <title>Battleship Game</title>
@@ -230,7 +231,7 @@
             var pos = getCanvasCoordinates(e, canvas[0]);
             var local = getSquare(pos.x, pos.y);
             console.log(local);
-            socket.emit('tiro', local);
+            // socket.emit('tiro', local);
 
 
 
@@ -294,6 +295,13 @@
             //         console.log(save[i][j]);
             //     }
             // }
+                console.log(shipOnBoard);
+                
+            if (shipOnBoard == 14) {
+                console.log("true");
+                shipOnBoard++;
+                socket.emit('pronto');
+            }
 
 
         });
@@ -314,10 +322,13 @@
         });
 
         canvas[1].addEventListener('click', function (e) {
-
-            var pos = getCanvasCoordinates(e, canvas[1]);
-            var local = getSquare(pos.x, pos.y);
-            socket.emit('tiro', local);
+            
+            if (shipOnBoard >= 14) {
+                var pos = getCanvasCoordinates(e, canvas[1]);
+                var local = getSquare(pos.x, pos.y);
+                socket.emit('tiro', local);
+            }
+            
         });
 
 

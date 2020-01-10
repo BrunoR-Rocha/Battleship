@@ -152,6 +152,7 @@ io.on('connection', (socket) => {
       }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
    });
+
    socket.on('message', function (message) {
 
       if (users[socket.id].jogo != null && message) {
@@ -173,6 +174,12 @@ io.on('connection', (socket) => {
    socket.on('tiro', function (local) {
 
       console.log("tiro efetuado no " + local.x + ' , ' + local.y);
+
+   });
+
+   socket.on('pronto', function () {
+
+      console.log("Jogador está pronto");
 
    });
 });
