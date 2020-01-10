@@ -10,6 +10,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 
 
     <title>Battleship Game</title>
@@ -48,6 +49,8 @@
     <div class="panel-body">
 
         <!-- Player grids -->
+        <h4 id="not-ready"><%= name %> is not ready</h4>
+        <h4 id="ready"><%= name %> is ready</h4>
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -68,6 +71,7 @@
         <h3>Your ships</h3>
         <button type="button" id="rotate">Horizontal</button>
 
+        <% var shipsTotal = 0 %>
         <% for(var i=0; i < ships.length; i++) { %>
         <p>
 
@@ -76,6 +80,7 @@
             <img src="<%= ships[i].image %>" alt="" height="60px">
             <%= ships[i].type %>
             <%= ships[i].amount %>x
+
         </p>
         <% } %>
 
@@ -114,6 +119,7 @@
         var val = 0;
         var amo = 0;
         var current_boat = "";
+        var shipOnBoard = 0;
 
         $('.btn-default').click(function (e) {
 
@@ -135,8 +141,6 @@
             }
         });
 
-
-
         $('#message-form').submit(function () {
             socket.emit('message', $('#chat_message').val());
             $('#chat_message').val('');
@@ -146,6 +150,8 @@
         function handleConnection() {
             $('.panel-body').hide();
             $('.col-md-4').hide();
+            $('#not-ready').hide();
+            $('#ready').hide();
             console.log('Connected to server.');
             $('#waiting').show();
             socket.emit('join', $("#ref").val());
@@ -156,9 +162,14 @@
             $('#waiting').hide();
             $('.panel-body').show();
             $('.col-md-4').show();
+            $('#not-ready').show();
+            $('#ready').hide();
             //socket.emit('',$("#ref").val());
         }
-
+        function ready() {
+            $('#not-ready').hide();
+            $('#ready').show();
+        }
         function handleNewUser(msg) {
             $(".chat").append("<li style='text-decoration:underline'>" + msg + "</li>");
         }
@@ -229,7 +240,7 @@
             var pos = getCanvasCoordinates(e, canvas[0]);
             var local = getSquare(pos.x, pos.y);
             console.log(local);
-            socket.emit('tiro', local);
+            // socket.emit('tiro', local);
 
 
 
@@ -276,12 +287,14 @@
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
+
                         } else {
                             save[local.y + i][local.x] = 1;
 
                         }
                     }
                     amo--;
+                    shipOnBoard = shipOnBoard + val;
 
                 }
             }
@@ -291,6 +304,14 @@
             //         console.log(save[i][j]);
             //     }
             // }
+                console.log(shipOnBoard);
+                
+            if (shipOnBoard == 14) {
+                console.log("true");
+                shipOnBoard++;
+                socket.emit('pronto');
+                ready();
+            }
 
 
         });
@@ -311,10 +332,13 @@
         });
 
         canvas[1].addEventListener('click', function (e) {
-
-            var pos = getCanvasCoordinates(e, canvas[1]);
-            var local = getSquare(pos.x, pos.y);
-            socket.emit('tiro', local);
+            
+            if (shipOnBoard >= 14) {
+                var pos = getCanvasCoordinates(e, canvas[1]);
+                var local = getSquare(pos.x, pos.y);
+                socket.emit('tiro', local);
+            }
+            
         });
 
 
@@ -356,31 +380,29 @@
 
                     context[gridIndex].fillStyle = '#7799FF'
 
+                    if (gridIndex == 1 && shipOnBoard >= 14) {
+                        if (j === squareHover.x && i === squareHover.y) {
+
+                            context[gridIndex].fillStyle = '#4477FF';
+                        }
+                    }
                     if (save[i][j] != 1) {
+
                         // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
                         // Para grid do utilizador atual
                         if (gridIndex == 0) {
                             // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
-                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val &&
-                                i ===
-                                squareHover.y) {
-                                context[gridIndex].fillStyle = '#4477FF';
-                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
-                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y +
-                                val &&
-                                j === squareHover.x) {
+                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val && i === squareHover.y && shipOnBoard < 14) {
                                 context[gridIndex].fillStyle = '#4477FF';
 
-                            }
-                        }
-                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima
-                        if (gridIndex == 1) {
-                            if (j === squareHover.x && i === squareHover.y) {
+                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
+                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y + val && j === squareHover.x && shipOnBoard < 14) {
                                 context[gridIndex].fillStyle = '#4477FF';
                             }
                         }
+                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
                     } else if (gridIndex == 0) {
-                        context[gridIndex].fillStyle = 'red';
+                        context[gridIndex].fillStyle = '#4477FF';
                     }
 
                     context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
