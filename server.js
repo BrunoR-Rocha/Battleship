@@ -111,7 +111,6 @@ app.get('/mygames', (req, res) => {
    res.sendFile(__dirname + "/views" + '/mygames.html');
 })
 
-
 io.on('connection', (socket) => {
    console.log('Someone joined the server');
    //console.log(users);
@@ -178,9 +177,17 @@ io.on('connection', (socket) => {
    });
 
    socket.on('tiro', function (local) {
-
-      console.log("tiro efetuado no " + local.x + ' , ' + local.y);
-
+      var game = users[socket.id].jogo; // aqui obtens a informação do jogo
+      
+      //mudança de turnos quando se da um tiro
+      if(game.turno == 0)
+      {
+         game.turno == 1;
+         console.log("tiro efetuado no " + local.x + ' , ' + local.y);
+      }
+      else{
+         game.turno == 0;
+      }
    });
 
 
@@ -189,6 +196,8 @@ io.on('connection', (socket) => {
       console.log("Jogador " + id + " está pronto");
 
       ready.push(id);
+      //em vez de fazer o random dos id's fazer o random entre 0 e 1
+      // Mas tipo, a cena é aceder ao socket id do player, 
 
       if (ready.length == 2) {
          var bothReady = true;
@@ -196,10 +205,22 @@ io.on('connection', (socket) => {
       }
 
       if (bothReady) {
-         var chooseRandomPlayer = ready[~~(Math.random() * 2)];
-         
-      }
+         var game = users[socket.id].jogo; // aqui obtens a informação do jogo
 
+         var chooseRandomPlayer = Math.floor(Math.random() * 2); //escolhe um random entre  0 e 1
+
+         game.turno = chooseRandomPlayer;
+         //console.log(game);
+
+         if(game.turno == users[socket.id].numero)
+         { 
+            console.log(socket.id + "pode disparar");
+            //io.sockets.in(res.room).emit('canFire', chooseRandomPlayer); 
+            //se nao me engano.. da para enviar aqui codigo html para mostrar na pagina.. e assim geria o que aparecia
+      
+            io.to(socket.id).emit('canFire');
+         }
+      }
    });
 });
 

@@ -51,6 +51,7 @@
         <!-- Player grids -->
         <h4 id="not-ready"><%= name %> is not ready</h4>
         <h4 id="ready"><%= name %> is ready</h4>
+        <h4 id="turn">Its your turn now</h4>
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -113,6 +114,8 @@
 
             socket.on('info server', handleInfoMessage);
 
+            socket.on('canFire', handleFireRequest);
+
         });
 
 
@@ -152,6 +155,7 @@
             $('.col-md-4').hide();
             $('#not-ready').hide();
             $('#ready').hide();
+            $('#turn').hide();
             console.log('Connected to server.');
             $('#waiting').show();
             socket.emit('join', $("#ref").val());
@@ -180,6 +184,11 @@
 
         function handleInfoMessage(msg) {
             $("#info_field").html("<p style='text-size:0.3em'>" + msg + "</p>");
+        }
+
+        function handleFireRequest(){
+            $('#ready').hide();
+            $('#turn').show();
         }
 
         var save = [];
