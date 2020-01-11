@@ -26,6 +26,8 @@ var users = {};
 var actual_user = [];
 var collections;
 var gameCount = 1;
+var ready = [];
+var bothReady = false;
 
 app.set('views', __dirname + '/views');
 
@@ -53,7 +55,6 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/game', (req, res) => {
-   var bothReady = false;
    var name = req.query.user_name;
    var id = req.query.user_id;
    var ships = [{
@@ -93,7 +94,6 @@ app.get('/game', (req, res) => {
    var dados = {
       "name": name,
       "id": id,
-      "bothReady": bothReady
    }
 
    collections = mongoUtils.getDriver();
@@ -104,7 +104,6 @@ app.get('/game', (req, res) => {
       name: name,
       id: id,
       ships: ships,
-      bothReady: bothReady
    });
 })
 
@@ -184,17 +183,21 @@ io.on('connection', (socket) => {
 
    });
 
-   socket.on('pronto', function (id) {
 
-      console.log("Jogador está pronto");
-      var bothReady = true;
-      console.log(bothReady);
+
+   socket.on('pronto', function (id) {
+      console.log("Jogador " + id + " está pronto");
+
+      ready.push(id);
+
+      if (ready.length == 2) {
+         var bothReady = true;
+
+      }
 
       if (bothReady) {
-         var chooseRandomPlayer = res.players[~~(Math.random() * 2)];
-         setCanFire(chooseRandomPlayer.id, function () {
-            io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);
-         });
+         var chooseRandomPlayer = ready[~~(Math.random() * 2)];
+         
       }
 
    });
