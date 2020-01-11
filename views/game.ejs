@@ -51,6 +51,9 @@
         <!-- Player grids -->
         <h4 id="not-ready"><%= name %> is not ready</h4>
         <h4 id="ready"><%= name %> is ready</h4>
+        <h4 id="turn">Its your turn now</h4>
+        <h4 id="wait_turn">Wait for your turn</h4>
+
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -113,6 +116,10 @@
 
             socket.on('info server', handleInfoMessage);
 
+            socket.on('canFire', handleFireRequest);
+
+            socket.on('cant_Fire', handleWaitFire);
+
         });
 
 
@@ -152,6 +159,8 @@
             $('.col-md-4').hide();
             $('#not-ready').hide();
             $('#ready').hide();
+            $('#turn').hide();
+            $('#wait_turn').hide();
             console.log('Connected to server.');
             $('#waiting').show();
             socket.emit('join', $("#ref").val());
@@ -166,10 +175,12 @@
             $('#ready').hide();
             //socket.emit('',$("#ref").val());
         }
+
         function ready() {
             $('#not-ready').hide();
             $('#ready').show();
         }
+
         function handleNewUser(msg) {
             $(".chat").append("<li style='text-decoration:underline'>" + msg + "</li>");
         }
@@ -180,6 +191,18 @@
 
         function handleInfoMessage(msg) {
             $("#info_field").html("<p style='text-size:0.3em'>" + msg + "</p>");
+        }
+
+        function handleFireRequest() {
+            $('#ready').hide();
+            $('#turn').show();
+            $('#wait_turn').hide();
+        }
+
+        function handleWaitFire() {
+            $('#ready').hide();
+            $('#turn').hide();
+            $('#wait_turn').show();
         }
 
         var save = [];
@@ -284,13 +307,18 @@
             if (amo > 0) {
                 // Se não encontrou barcos, "pinta"
                 if (found == false && wall == false) {
+                    var coord = []
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
-
+                            coord = [local.y, local.x + i]
+                            orientation = 1; // vertical
+                            socket.emit('place', {coord, orientation});
                         } else {
                             save[local.y + i][local.x] = 1;
-
+                            coord = [local.y + i, local.x]
+                            orientation = 0; // horizontal
+                            socket.emit('place', coord);
                         }
                     }
                     amo--;
@@ -304,11 +332,11 @@
             //         console.log(save[i][j]);
             //     }
             // }
-                
+
             if (shipOnBoard == 14) {
                 shipOnBoard++;
                 id = $("#ref").val();
-                
+
                 socket.emit('pronto', id);
                 ready();
             }
@@ -332,13 +360,13 @@
         });
 
         canvas[1].addEventListener('click', function (e) {
-            
+
             if (shipOnBoard >= 14) {
                 var pos = getCanvasCoordinates(e, canvas[1]);
                 var local = getSquare(pos.x, pos.y);
                 socket.emit('tiro', local);
             }
-            
+
         });
 
 
@@ -392,11 +420,13 @@
                         // Para grid do utilizador atual
                         if (gridIndex == 0) {
                             // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
-                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val && i === squareHover.y && shipOnBoard < 14) {
+                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val &&
+                                i === squareHover.y && shipOnBoard < 14) {
                                 context[gridIndex].fillStyle = '#4477FF';
 
                                 // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
-                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y + val && j === squareHover.x && shipOnBoard < 14) {
+                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y +
+                                val && j === squareHover.x && shipOnBoard < 14) {
                                 context[gridIndex].fillStyle = '#4477FF';
                             }
                         }
