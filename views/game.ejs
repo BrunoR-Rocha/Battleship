@@ -307,7 +307,9 @@
                 
             if (shipOnBoard == 14) {
                 shipOnBoard++;
-                socket.emit('pronto');
+                id = $("#ref").val();
+                
+                socket.emit('pronto', id);
                 ready();
             }
 

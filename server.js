@@ -53,7 +53,7 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/game', (req, res) => {
-
+   var bothReady = false;
    var name = req.query.user_name;
    var id = req.query.user_id;
    var ships = [{
@@ -90,11 +90,21 @@ app.get('/game', (req, res) => {
       }
    ];
 
+   var dados = {
+      "name": name,
+      "id": id,
+      "bothReady": bothReady
+   }
+
+   collections = mongoUtils.getDriver();
+
+   collections.collection('games').insertOne(dados);
 
    res.render('game', {
       name: name,
       id: id,
-      ships: ships
+      ships: ships,
+      bothReady: bothReady
    });
 })
 
@@ -153,7 +163,7 @@ io.on('connection', (socket) => {
    socket.on('message', function (message) {
 
       if (users[socket.id].jogo != null && message) {
-         
+
          //mostra a mensagem para o utilizador conectado na sala 
          socket.broadcast.to('game' + users[socket.id].jogo.id).emit('message', {
             name: 'Adversario',
@@ -174,9 +184,18 @@ io.on('connection', (socket) => {
 
    });
 
-   socket.on('pronto', function () {
+   socket.on('pronto', function (id) {
 
       console.log("Jogador está pronto");
+      var bothReady = true;
+      console.log(bothReady);
+
+      if (bothReady) {
+         var chooseRandomPlayer = res.players[~~(Math.random() * 2)];
+         setCanFire(chooseRandomPlayer.id, function () {
+            io.sockets.in(res.room).emit('canFire', chooseRandomPlayer);
+         });
+      }
 
    });
 });
