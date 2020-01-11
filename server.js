@@ -26,6 +26,8 @@ var users = {};
 var actual_user = [];
 var collections;
 var gameCount = 1;
+var ready = [];
+var bothReady = false;
 
 app.set('views', __dirname + '/views');
 
@@ -53,7 +55,6 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/game', (req, res) => {
-
    var name = req.query.user_name;
    var id = req.query.user_id;
    var ships = [{
@@ -90,11 +91,19 @@ app.get('/game', (req, res) => {
       }
    ];
 
+   var dados = {
+      "name": name,
+      "id": id,
+   }
+
+   collections = mongoUtils.getDriver();
+
+   collections.collection('games').insertOne(dados);
 
    res.render('game', {
       name: name,
       id: id,
-      ships: ships
+      ships: ships,
    });
 })
 
@@ -153,7 +162,7 @@ io.on('connection', (socket) => {
    socket.on('message', function (message) {
 
       if (users[socket.id].jogo != null && message) {
-         
+
          //mostra a mensagem para o utilizador conectado na sala 
          socket.broadcast.to('game' + users[socket.id].jogo.id).emit('message', {
             name: 'Adversario',
@@ -174,9 +183,22 @@ io.on('connection', (socket) => {
 
    });
 
-   socket.on('pronto', function () {
 
-      console.log("Jogador está pronto");
+
+   socket.on('pronto', function (id) {
+      console.log("Jogador " + id + " está pronto");
+
+      ready.push(id);
+
+      if (ready.length == 2) {
+         var bothReady = true;
+
+      }
+
+      if (bothReady) {
+         var chooseRandomPlayer = ready[~~(Math.random() * 2)];
+         
+      }
 
    });
 });

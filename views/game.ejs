@@ -304,12 +304,12 @@
             //         console.log(save[i][j]);
             //     }
             // }
-                console.log(shipOnBoard);
                 
             if (shipOnBoard == 14) {
-                console.log("true");
                 shipOnBoard++;
-                socket.emit('pronto');
+                id = $("#ref").val();
+                
+                socket.emit('pronto', id);
                 ready();
             }
 
