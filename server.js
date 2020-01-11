@@ -240,7 +240,7 @@ io.on('connection', (socket) => {
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
-            id: "5e16259558c64f2090088a4f"
+            id: coord[3]
          }).toArray(function (err, result) {
             if (err)
                throw err;
