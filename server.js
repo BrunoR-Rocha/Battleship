@@ -90,14 +90,21 @@ app.get('/game', (req, res) => {
          'image': 'https://cdn3.iconfinder.com/data/icons/war-6/512/b135_7-512.png'
       }
    ];
+   var matrix = []; 
+   for (var i = 0; i < 9; i++) {
+      matrix[i] = [];
+      for (var j = 0; j < 9; j++) {
+         matrix[i][j] = 1;
+      }
+   }
 
    var dados = {
       "name": name,
       "id": id,
+      "matrix": matrix
    }
 
    collections = mongoUtils.getDriver();
-
    collections.collection('games').insertOne(dados);
 
    res.render('game', {
@@ -178,19 +185,15 @@ io.on('connection', (socket) => {
 
    socket.on('tiro', function (local) {
       var game = users[socket.id].jogo; // aqui obtens a informação do jogo
-      
+      console.log(game.turno);
       //mudança de turnos quando se da um tiro
-      if(game.turno == 0)
-      {
+      if (game.turno == 0) {
+         console.log(game.turno + "tiro efetuado no " + local.x + ' , ' + local.y);
          game.turno == 1;
-         console.log("tiro efetuado no " + local.x + ' , ' + local.y);
-      }
-      else{
+      } else if (game.turno == 1) {
          game.turno == 0;
       }
    });
-
-
 
    socket.on('pronto', function (id) {
       console.log("Jogador " + id + " está pronto");
@@ -201,7 +204,6 @@ io.on('connection', (socket) => {
 
       if (ready.length == 2) {
          var bothReady = true;
-
       }
 
       if (bothReady) {
@@ -211,14 +213,12 @@ io.on('connection', (socket) => {
 
          game.turno = chooseRandomPlayer;
          //console.log(game);
-
-         if(game.turno == users[socket.id].numero)
-         { 
+         if (game.turno == users[socket.id].numero) {
             console.log(socket.id + "pode disparar");
             //io.sockets.in(res.room).emit('canFire', chooseRandomPlayer); 
-            //se nao me engano.. da para enviar aqui codigo html para mostrar na pagina.. e assim geria o que aparecia
-      
+
             io.to(socket.id).emit('canFire');
+            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('cant_Fire');
          }
       }
    });
@@ -250,18 +250,24 @@ app.post('/register', function (req, res) {
          if (err) {
             return err;
          }
-
-         var dados = {
-            "name": name,
-            "email": email,
-            "password": hashedPassword,
-         }
-
          collections = mongoUtils.getDriver();
+         var user = collections.collection('users').find({email : email});
 
-         collections.collection('users').insertOne(dados);
-
-         res.redirect('/login');
+         if(!user){
+            var dados = {
+               "name": name,
+               "email": email,
+               "password": hashedPassword,
+            }
+   
+            collections.collection('users').insertOne(dados);
+   
+            res.redirect('/login');
+         }
+         else{
+            console.log("Utilizador já  registado");
+            res.redirect('/register');
+         }
 
       });
    } else {

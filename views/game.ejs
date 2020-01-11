@@ -52,6 +52,8 @@
         <h4 id="not-ready"><%= name %> is not ready</h4>
         <h4 id="ready"><%= name %> is ready</h4>
         <h4 id="turn">Its your turn now</h4>
+        <h4 id="wait_turn">Wait for your turn</h4>
+
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -116,6 +118,8 @@
 
             socket.on('canFire', handleFireRequest);
 
+            socket.on('cant_Fire', handleWaitFire);
+
         });
 
 
@@ -156,6 +160,7 @@
             $('#not-ready').hide();
             $('#ready').hide();
             $('#turn').hide();
+            $('#wait_turn').hide();
             console.log('Connected to server.');
             $('#waiting').show();
             socket.emit('join', $("#ref").val());
@@ -188,7 +193,13 @@
 
         function handleFireRequest(){
             $('#ready').hide();
-            $('#turn').show();
+            $('#turn').show(); 
+            $('#wait_turn').hide();
+        }
+        function handleWaitFire(){
+            $('#ready').hide();
+            $('#turn').hide(); 
+            $('#wait_turn').show();
         }
 
         var save = [];
@@ -299,7 +310,6 @@
 
                         } else {
                             save[local.y + i][local.x] = 1;
-
                         }
                     }
                     amo--;
