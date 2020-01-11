@@ -28,6 +28,7 @@ var collections;
 var gameCount = 1;
 var ready = [];
 var bothReady = false;
+var matrix = [];
 
 app.set('views', __dirname + '/views');
 
@@ -90,11 +91,11 @@ app.get('/game', (req, res) => {
          'image': 'https://cdn3.iconfinder.com/data/icons/war-6/512/b135_7-512.png'
       }
    ];
-   var matrix = []; 
+
    for (var i = 0; i < 9; i++) {
       matrix[i] = [];
       for (var j = 0; j < 9; j++) {
-         matrix[i][j] = 1;
+         matrix[i][j] = 0;
       }
    }
 
@@ -185,22 +186,66 @@ io.on('connection', (socket) => {
 
    socket.on('tiro', function (local) {
       var game = users[socket.id].jogo; // aqui obtens a informação do jogo
-      console.log(game.turno);
+
       //mudança de turnos quando se da um tiro
       if (game.turno == 0) {
-         console.log(game.turno + "tiro efetuado no " + local.x + ' , ' + local.y);
-         game.turno == 1;
+
+         console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
+         //se acertar em algum barco.. continua
+
+         //se nao acertar muda de turno
+         game.turno = 1;
+
+         if (game.turno == users[socket.id].numero) {
+            // console.log(socket.id + "pode disparar");
+            io.to(socket.id).emit('cant_Fire');
+            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
+         }
+         // console.log(game.turno);
       } else if (game.turno == 1) {
-         game.turno == 0;
+
+         console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
+
+         game.turno = 0;
+
+         if (game.turno == users[socket.id].numero) {
+            // console.log(socket.id + "pode disparar");
+            io.to(socket.id).emit('cant_Fire');
+            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
+         }
       }
+   });
+
+   socket.on('place', function (coord, orientation) {
+
+      //se o barco for colocado na horizontal
+      if (orientation == 0) {
+         console.log(coord[1] + " , " + coord[0]); // x, y
+         console.log("Horizontal" + matrix[coord[1]][coord[0]]);
+      }
+      //se o barco for colocado na vertical
+      if (orientation == 1) {
+         console.log(coord[1] + " , " + coord[0]); // x, y
+         console.log("vertical" + matrix[coord[1]][coord[0]]);
+      }
+
+      // Ler matriz da BD aqui
+      collections = mongoUtils.getDriver();
+      var teste = collections.collection('games').find({
+         id: "5e16259558c64f2090088a4f"
+      }).toArray(function (err, result) {
+         if (err)
+            throw err;
+
+         console.log(result[0]); //tens de eliminar todas as paginas abertas, já eliminei tens de dar refresh no visual code
+      });
+
    });
 
    socket.on('pronto', function (id) {
       console.log("Jogador " + id + " está pronto");
 
       ready.push(id);
-      //em vez de fazer o random dos id's fazer o random entre 0 e 1
-      // Mas tipo, a cena é aceder ao socket id do player, 
 
       if (ready.length == 2) {
          var bothReady = true;
@@ -214,8 +259,13 @@ io.on('connection', (socket) => {
          game.turno = chooseRandomPlayer;
          //console.log(game);
          if (game.turno == users[socket.id].numero) {
-            console.log(socket.id + "pode disparar");
-            //io.sockets.in(res.room).emit('canFire', chooseRandomPlayer); 
+
+            console.log(game.turno + " " + socket.id + " pode disparar");
+
+            io.to(socket.id).emit('canFire');
+            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('cant_Fire');
+         } else {
+            console.log(game.turno + " " + socket.id + " pode disparar");
 
             io.to(socket.id).emit('canFire');
             socket.broadcast.to('game' + users[socket.id].jogo.id).emit('cant_Fire');
@@ -251,24 +301,27 @@ app.post('/register', function (req, res) {
             return err;
          }
          collections = mongoUtils.getDriver();
-         var user = collections.collection('users').find({email : email});
+         var user = collections.collection('users').find({
+            email: email
+         }).toArray(function (err, result) {
+            if (err)
+               throw err;;
+            //console.log(result);
+            if (!result[0]) {
+               var dados = {
+                  "name": name,
+                  "email": email,
+                  "password": hashedPassword,
+               }
 
-         if(!user){
-            var dados = {
-               "name": name,
-               "email": email,
-               "password": hashedPassword,
+               collections.collection('users').insertOne(dados);
+
+               res.redirect('/login');
+            } else {
+               console.log("Utilizador já  registado");
+               res.redirect('/register');
             }
-   
-            collections.collection('users').insertOne(dados);
-   
-            res.redirect('/login');
-         }
-         else{
-            console.log("Utilizador já  registado");
-            res.redirect('/register');
-         }
-
+         })
       });
    } else {
       console.log("Erro de insercao");
