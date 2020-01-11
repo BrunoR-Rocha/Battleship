@@ -259,7 +259,7 @@ io.on('connection', (socket) => {
             }
 
             collections.collection('games').updateOne({
-               id: "5e16259558c64f2090088a4f"
+               id: coord[3]
             }, {
                $set: {
                   matrix: matriz_sec

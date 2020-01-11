@@ -311,13 +311,15 @@
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
-                            coord = [local.y, local.x + i, val]
-                            
+                            id = $("#ref").val();
+                            coord = [local.y, local.x + i, val,id]
+
                             socket.emit('place', coord);
                         } else {
                             save[local.y + i][local.x] = 1;
-                            coord = [local.y + i, local.x, val]
-                            
+                            id = $("#ref").val();
+                            coord = [local.y + i, local.x, val,id]
+
                             socket.emit('place', coord);
                         }
                     }
