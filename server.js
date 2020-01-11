@@ -28,7 +28,7 @@ var collections;
 var gameCount = 1;
 var ready = [];
 var bothReady = false;
-var matrix = [];
+
 
 app.set('views', __dirname + '/views');
 
@@ -92,9 +92,10 @@ app.get('/game', (req, res) => {
       }
    ];
 
-   for (var i = 0; i < 9; i++) {
+   var matrix = [];
+   for (var i = 0; i < 10; i++) {
       matrix[i] = [];
-      for (var j = 0; j < 9; j++) {
+      for (var j = 0; j < 10; j++) {
          matrix[i][j] = 0;
       }
    }
@@ -216,29 +217,63 @@ io.on('connection', (socket) => {
       }
    });
 
-   socket.on('place', function (coord, orientation) {
 
-      //se o barco for colocado na horizontal
-      if (orientation == 0) {
-         console.log(coord[1] + " , " + coord[0]); // x, y
-         console.log("Horizontal" + matrix[coord[1]][coord[0]]);
+   var matriz_sec = [];
+
+   var cells = [];
+
+   socket.on('place', function (coord) {
+
+      cells.push([coord[1], coord[0]]);
+      console.log(cells.length + " - " + coord[2]);
+
+
+      if (cells.length == coord[2]) {
+         console.log(cells);
+         // Já recebeu todas as células do barco
+
+         collections = mongoUtils.getDriver();
+
+         // console.log(coord[1] + " , " + coord[0]); // x, y
+
+         // collections.collection('games').remove({});
+
+         // Ler matriz da BD aqui
+         var teste = collections.collection('games').find({
+            id: "5e16259558c64f2090088a4f"
+         }).toArray(function (err, result) {
+            if (err)
+               throw err;
+
+            matriz_sec = result[0].matrix;
+
+            console.log("teste" + cells.length);
+
+            for (var i = 0; i < cells.length; i++) {
+               console.log("i" + i);
+
+               matriz_sec[cells[i][0]][cells[i][1]] = 1;
+
+               console.log("x" + matriz_sec[cells[i][0]][cells[i][1]]);
+
+            }
+
+            collections.collection('games').updateOne({
+               id: "5e16259558c64f2090088a4f"
+            }, {
+               $set: {
+                  matrix: matriz_sec
+               }
+            });
+
+            cells = [];
+
+            // console.log("y" + matriz_sec[coord[1]][coord[0]]);
+
+
+         });
       }
-      //se o barco for colocado na vertical
-      if (orientation == 1) {
-         console.log(coord[1] + " , " + coord[0]); // x, y
-         console.log("vertical" + matrix[coord[1]][coord[0]]);
-      }
 
-      // Ler matriz da BD aqui
-      collections = mongoUtils.getDriver();
-      var teste = collections.collection('games').find({
-         id: "5e16259558c64f2090088a4f"
-      }).toArray(function (err, result) {
-         if (err)
-            throw err;
-
-         console.log(result[0]); //tens de eliminar todas as paginas abertas, já eliminei tens de dar refresh no visual code
-      });
 
    });
 

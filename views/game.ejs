@@ -311,13 +311,13 @@
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
                             save[local.y][local.x + i] = 1;
-                            coord = [local.y, local.x + i]
-                            orientation = 1; // vertical
-                            socket.emit('place', {coord, orientation});
+                            coord = [local.y, local.x + i, val]
+                            
+                            socket.emit('place', coord);
                         } else {
                             save[local.y + i][local.x] = 1;
-                            coord = [local.y + i, local.x]
-                            orientation = 0; // horizontal
+                            coord = [local.y + i, local.x, val]
+                            
                             socket.emit('place', coord);
                         }
                     }
