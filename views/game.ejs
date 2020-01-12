@@ -127,11 +127,11 @@
                 $("#opponent_id").val(opponent_id);
             });
 
-            /*
+            socket.on('avisoSaida', handleWarning);
+
             socket.on('leaveGame', Url => {
                     window.location = Url;
             });
-            */
         });
 
 
@@ -176,6 +176,7 @@
             $('#not-ready').hide();
             $('#ready').hide();
             $('#turn').hide();
+            $('.leave_jogo').hide();
             $('#wait_turn').hide();
             console.log('Connected to server.');
             $('#waiting').show();
@@ -201,6 +202,7 @@
         function ready() {
             $('#not-ready').hide();
             $('#ready').show();
+            $('.leave_jogo').show();
         }
 
         function handleNewUser(msg) {
@@ -227,6 +229,10 @@
             $('#turn').hide();
             $('#wait_turn').show();
             $("#canvas-grid2").css("pointer-events", "none");
+        }
+
+        function handleWarning(msg){
+            $(".chat").append("<li style='background-color:grey'>" + msg.message + "</li>");
         }
 
         var player = [];

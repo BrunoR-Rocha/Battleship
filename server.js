@@ -446,22 +446,28 @@ io.on('connection', (socket) => {
    });
 
    //sinal que o utilizador quer sair do jogo
-   socket.on('leave', function () {
-      /*
+
+   socket.on('leave', function(){
+
          // se o jogo ainda nao tiver terminado ... 
          //guarda o jogo por completo .. ultimos updates se necessario
 
-       socket.leave('game' + users[socket.id].inGame.id);
-      
-       users[socket.id].inGame = null; // deixa de ter um jogo associado
-       users[socket.id].player = null; // deixa de ter um numero de jogador em jogo
-      
-         io.to(socket.id).emit('sair');
+      socket.broadcast.to('game' + users[socket.id].jogo.id).emit('avisoSaida', {
+         message: 'Opponent has left the game'
+      });
 
-      //redireciona para a pagina main;
+       socket.leave('game' + users[socket.id].jogo.id);
+      
+       users[socket.id].jogo = null; // deixa de ter um jogo associado
+       users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
+     
+       console.log(users);
+
+      //redireciona para a pagina main; FUNCIONANDO MAL!
          socket.emit('leaveGame', '/main');
-       */
-   });
+       
+      //console.log("User want to leave");
+  });
 
 
    socket.on('pronto', function (id) {
@@ -549,6 +555,22 @@ app.post('/register', function (req, res) {
       console.log("Erro de insercao");
    }
 });
+
+var main_data = [];
+
+app.get('/main', (req, res) => {
+   //name
+   //id
+   //valores transmitidos no leave
+
+   /*
+   res.render('main', {
+      name:
+      id:
+   })
+   */
+  res.redirect('/mygames');
+})
 
 app.post('/main', function (req, res) {
 
