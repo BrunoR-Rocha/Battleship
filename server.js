@@ -55,9 +55,19 @@ app.get('/login', (req, res) => {
    res.sendFile(__dirname + "/views" + '/login.html');
 });
 
+
+var user_id = [];
+var user_name = [];
+
 app.get('/game', (req, res) => {
    var name = req.query.user_name;
    var id = req.query.user_id;
+
+   user_id.push(id);
+   user_name.push(name);
+
+
+
    var ships = [{
          'type': 'Aircraft carrier',
          'size': 5,
@@ -92,22 +102,7 @@ app.get('/game', (req, res) => {
       }
    ];
 
-   var matrix = [];
-   for (var i = 0; i < 10; i++) {
-      matrix[i] = [];
-      for (var j = 0; j < 10; j++) {
-         matrix[i][j] = 0;
-      }
-   }
 
-   var dados = {
-      "name": name,
-      "id": id,
-      "matrix": matrix
-   }
-
-   collections = mongoUtils.getDriver();
-   collections.collection('games').insertOne(dados);
 
    res.render('game', {
       name: name,
@@ -146,6 +141,32 @@ io.on('connection', (socket) => {
       if (players.length >= 2) {
 
          var game = new BattleShip(gameCount++, players[0].id, players[1].id);
+
+         var matrix = [];
+         for (var i = 0; i < 10; i++) {
+            matrix[i] = [];
+            for (var j = 0; j < 10; j++) {
+               matrix[i][j] = 0;
+            }
+         }
+
+
+         var dados = {};
+         collections = mongoUtils.getDriver();
+
+         for (let i = 0; i < players.length; i++) {
+            dados = {
+               "id": user_id[i],
+               "name":user_name[i],
+               "matrix": matrix,
+               "game_id": game.id
+            }
+            collections.collection('games').insertOne(dados);
+         }
+
+         user_id = [];
+         user_name = [];
+
 
          //console.log(game.players);
 
@@ -193,7 +214,7 @@ io.on('connection', (socket) => {
 
          console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
          //se acertar em algum barco.. continua
-      
+
          //se nao acertar muda de turno
          game.turno = 1;
 
@@ -215,6 +236,10 @@ io.on('connection', (socket) => {
             socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
          }
       }
+
+      collections = mongoUtils.getDriver();
+
+
    });
 
 
@@ -238,7 +263,7 @@ io.on('connection', (socket) => {
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
-            id: coord[3]
+            id: coord[3] //coord[3] -> user_id
          }).toArray(function (err, result) {
             if (err)
                throw err;
