@@ -122,6 +122,11 @@
 
             socket.on('cant_Fire', handleWaitFire);
 
+            socket.on('setOpponent', function(opponent_id) {
+                alert(opponent_id);
+                $("#opponent_id").val(opponent_id);
+            });
+
             socket.on('avisoSaida', handleWarning);
 
             socket.on('leaveGame', Url => {
@@ -178,12 +183,14 @@
             socket.emit('join', $("#ref").val());
         }
 
-        function handleGameStart(shot) {
-            var game_id = shot[0];
-            var opponent_id = shot[1];
+        function handleGameStart(game_id) {
             console.log('game is starting' + game_id);
+            // alert($("#ref").val());
+            var dados = [$("#ref").val(), game_id];
+            socket.emit('getOpponent', dados);
+
             $("#game_id").val(game_id);
-            $("#opponent_id").val(opponent_id);
+            // $("#opponent_id").val(opponent_id);
             $('#waiting').hide();
             $('.panel-body').show();
             $('.col-md-4').show();
