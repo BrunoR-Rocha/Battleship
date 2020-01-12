@@ -303,7 +303,7 @@ io.on('connection', (socket) => {
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
 
-         // collections.collection('games').remove({});
+         collections.collection('games').remove({});
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
@@ -359,7 +359,7 @@ io.on('connection', (socket) => {
          socket.emit('leaveGame', '/main');
        
       //console.log("User want to leave");
-   });
+  });
 
 
    socket.on('pronto', function (id) {
