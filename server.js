@@ -313,8 +313,20 @@ io.on('connection', (socket) => {
                      matrix: matriz_adv
                   }
                });
+
+               console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
+               var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y];
+               io.to('game' + game.id).emit('celulaAlterou', dados);
+
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('celulaAlterou', dados);
+               // io.to('game' + game.id).emit('celulaAlterou', dados);
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('celulaAlterou', 'A');
+               // socket.broadcast.to('game' + game.id).emit('celulaAlterou', 'A');
+
+
+
+
                // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
-               console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
                if (game.turno == users[socket.id].numero) {
                   // console.log(socket.id + "pode disparar");
                   io.to(socket.id).emit('cant_Fire');
@@ -377,8 +389,14 @@ io.on('connection', (socket) => {
                      matrix: matriz_adv
                   }
                });
+
+
+                              console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
+                              var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y];
+                              io.to('game' + game.id).emit('celulaAlterou', dados);
+
                // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
-               console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
+               // console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
 
                if (game.turno == users[socket.id].numero) {
                   // console.log(socket.id + "pode disparar");
@@ -447,27 +465,27 @@ io.on('connection', (socket) => {
 
    //sinal que o utilizador quer sair do jogo
 
-   socket.on('leave', function(){
+   socket.on('leave', function () {
 
-         // se o jogo ainda nao tiver terminado ... 
-         //guarda o jogo por completo .. ultimos updates se necessario
+      // se o jogo ainda nao tiver terminado ... 
+      //guarda o jogo por completo .. ultimos updates se necessario
 
       socket.broadcast.to('game' + users[socket.id].jogo.id).emit('avisoSaida', {
          message: 'Opponent has left the game'
       });
 
-       socket.leave('game' + users[socket.id].jogo.id);
-      
-       users[socket.id].jogo = null; // deixa de ter um jogo associado
-       users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
-     
-       console.log(users);
+      socket.leave('game' + users[socket.id].jogo.id);
+
+      users[socket.id].jogo = null; // deixa de ter um jogo associado
+      users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
+
+      console.log(users);
 
       //redireciona para a pagina main; FUNCIONANDO MAL!
-         socket.emit('leaveGame', '/main');
-       
+      socket.emit('leaveGame', '/main');
+
       //console.log("User want to leave");
-  });
+   });
 
 
    socket.on('pronto', function (id) {
@@ -569,7 +587,7 @@ app.get('/main', (req, res) => {
       id:
    })
    */
-  res.redirect('/mygames');
+   res.redirect('/mygames');
 })
 
 app.post('/main', function (req, res) {

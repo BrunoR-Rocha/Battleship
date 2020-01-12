@@ -105,6 +105,19 @@
     <script>
         var socket;
 
+        var player = [];
+        var opponent = [];
+
+        for (var i = 0; i < 10; i++) {
+            player[i] = [];
+            opponent[i] = [];
+            for (var j = 0; j < 10; j++) {
+                player[i][j] = 0;
+                opponent[i][j] = 0;
+            }
+        }
+
+
         $(document).ready(function () {
             socket = new io();
 
@@ -122,16 +135,20 @@
 
             socket.on('cant_Fire', handleWaitFire);
 
-            socket.on('setOpponent', function(opponent_id) {
-                alert(opponent_id);
+            socket.on('setOpponent', function (opponent_id) {
+                // alert(opponent_id);
                 $("#opponent_id").val(opponent_id);
             });
 
             socket.on('avisoSaida', handleWarning);
 
             socket.on('leaveGame', Url => {
-                    window.location = Url;
+                window.location = Url;
             });
+
+
+            socket.on('celulaAlterou', alterarCelula);
+
         });
 
 
@@ -231,21 +248,22 @@
             $("#canvas-grid2").css("pointer-events", "none");
         }
 
-        function handleWarning(msg){
+        function handleWarning(msg) {
             $(".chat").append("<li style='background-color:grey'>" + msg.message + "</li>");
         }
 
-        var player = [];
-        var opponent = [];
 
-        for (var i = 0; i < 10; i++) {
-            player[i] = [];
-            opponent[i] = [];
-            for (var j = 0; j < 10; j++) {
-                player[i][j] = 0;
-                opponent[i][j] = 0;
-            }
+
+
+        function alterarCelula(dados) {
+            var x = dados[1];
+            var y = dados[2];
+            var val = dados[0];
+            console.log("COORDS" + val + " - "+ x + " " + y);
+            opponent[y][x] = val;
+            console.log("ALTEROU" + opponent[x][y]);
         }
+
 
         var canvas = [],
             context = [],
@@ -403,11 +421,14 @@
                 opponent[local.y][local.x] = 1;
                 opponent_id = $("#opponent_id").val();
                 game_id = $("#game_id").val();
-                shot.push(local,opponent_id,game_id);
+                shot.push(local, opponent_id, game_id);
                 socket.emit('tiro', shot);
+
             }
 
         });
+
+
 
 
         function getCanvasCoordinates(event, canvas) {
@@ -475,7 +496,17 @@
                         context[gridIndex].fillStyle = '#4477FF';
                     }
 
-                    if (opponent[i][j] != 1) {
+
+            
+                    if (opponent[i][j] == 2) {
+                        if (gridIndex == 1) {
+                            context[gridIndex].fillStyle = 'orange';
+                        }
+                    } else if (opponent[i][j] == 3) {
+                        if (gridIndex == 1) {
+                            context[gridIndex].fillStyle = 'cyan';
+                        }
+                    } else if (opponent[i][j] != 1) {
 
                         // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
                         // Para grid do utilizador atual
@@ -486,7 +517,8 @@
                         }
                         // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
                     } else if (gridIndex == 1) {
-                        context[gridIndex].fillStyle = '#4477FF';
+                        context[gridIndex].fillStyle = 'red';
+
                     }
 
                     context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
