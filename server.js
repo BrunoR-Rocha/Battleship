@@ -58,10 +58,13 @@ app.get('/login', (req, res) => {
 
 var user_id = [];
 var user_name = [];
+var userId = 0;
+
 
 app.get('/game', (req, res) => {
    var name = req.query.user_name;
    var id = req.query.user_id;
+   userId = id;
 
    user_id.push(id);
    user_name.push(name);
@@ -179,6 +182,10 @@ io.on('connection', (socket) => {
             collections.collection('games').insertOne(dados);
          }
 
+
+         // var dados = [game.id, ];
+         // io.to('game' + game.id).emit('getOponent', dados);
+
          user_id = [];
          user_name = [];
 
@@ -197,8 +204,8 @@ io.on('connection', (socket) => {
          users[players[1].id].jogo = game;
          //console.log(players[0]);
 
-         var shot = [game.id, opponent_id];
-         io.to('game' + game.id).emit('start', shot);
+
+         io.to('game' + game.id).emit('start', game.id);
          console.log(io.sockets.adapter.rooms['game' + game.id]);
       }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
@@ -220,6 +227,34 @@ io.on('connection', (socket) => {
             message: message,
          });
       }
+   });
+
+
+
+
+   socket.on('getOpponent', function (dados) {
+
+      collections = mongoUtils.getDriver();
+
+      var hit = collections.collection('games').find({
+         id: dados[0],
+         game_id: parseInt(dados[1])
+      }).toArray(function (err, result) {
+         if (err)
+            throw err;
+
+
+         if (result[0]) {
+
+            socket.emit("setOpponent", result[0].opponent_id);
+            // console.log("CLAUDIO" + result[0].opponent_id);
+            // io.emit('setOpponent', result[0].opponent_id);
+
+         }
+
+
+      });
+
    });
 
    socket.on('tiro', function (shot) {
@@ -259,12 +294,15 @@ io.on('connection', (socket) => {
                matriz_adv = result[0].matrix;
                // matriz_adv[0][0] = 3;
 
+               console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
+
                if (matriz_adv[shot[0].x][shot[0].y] == 1) {
                   // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
                   matriz_adv[shot[0].x][shot[0].y] = 2;
+                  game.turno = 0;
                } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
-                  game.turno = 1; // Se falhou, muda o turno, caso contrário continua a disparar
                   matriz_adv[shot[0].x][shot[0].y] = 3;
+                  game.turno = 1; // Se falhou, muda o turno, caso contrário continua a disparar
                }
 
                collections.collection('games').updateOne({
@@ -276,30 +314,80 @@ io.on('connection', (socket) => {
                   }
                });
                // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
-
+               console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
+               if (game.turno == users[socket.id].numero) {
+                  // console.log(socket.id + "pode disparar");
+                  io.to(socket.id).emit('cant_Fire');
+                  socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
+               }
 
             }
          })
          /*   })
           */
 
-         if (game.turno == users[socket.id].numero) {
-            // console.log(socket.id + "pode disparar");
-            io.to(socket.id).emit('cant_Fire');
-            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
-         }
          // console.log(game.turno);
-      } else if (game.turno == 1) {
 
+      } else if (game.turno == 1) {
          console.log(game.turno + " tiro efetuado no " + shot[0].x + ' , ' + shot[0].y);
 
-         game.turno = 0;
+         // aqui é possivel obter a matriz do oponente? conseguimos obter o id do jogo e supostamente o id dos players
+         //
+         //console.log(users[socket.id].jogo)
 
-         if (game.turno == users[socket.id].numero) {
-            // console.log(socket.id + "pode disparar");
-            io.to(socket.id).emit('cant_Fire');
-            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
-         }
+         // arranjar alguma maneira de obter o id do oponente
+         //
+
+         //var id_opponent = ...
+         console.log(shot[1] + "id do oponente");
+         console.log(shot[2]);
+
+         var matriz_adv = [];
+
+
+         var hit = collections.collection('games').find({
+            id: shot[1],
+            game_id: parseInt(shot[2])
+         }).toArray(function (err, result) {
+            if (err)
+               throw err;
+
+
+            if (result[0]) {
+
+               matriz_adv = result[0].matrix;
+               // matriz_adv[0][0] = 3;
+
+               console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
+
+               if (matriz_adv[shot[0].x][shot[0].y] == 1) {
+                  // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
+                  matriz_adv[shot[0].x][shot[0].y] = 2;
+                  game.turno = 1;
+               } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
+                  matriz_adv[shot[0].x][shot[0].y] = 3;
+                  game.turno = 0; // Se falhou, muda o turno, caso contrário continua a disparar
+               }
+
+               collections.collection('games').updateOne({
+                  id: shot[1],
+                  game_id: parseInt(shot[2])
+               }, {
+                  $set: {
+                     matrix: matriz_adv
+                  }
+               });
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
+               console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
+
+               if (game.turno == users[socket.id].numero) {
+                  // console.log(socket.id + "pode disparar");
+                  io.to(socket.id).emit('cant_Fire');
+                  socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
+               }
+
+            }
+         })
       }
    });
 
