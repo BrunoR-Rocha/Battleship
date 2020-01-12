@@ -225,11 +225,9 @@ io.on('connection', (socket) => {
    socket.on('place', function (coord) {
 
       cells.push([coord[1], coord[0]]);
-      console.log(cells.length + " - " + coord[2]);
 
 
       if (cells.length == coord[2]) {
-         console.log(cells);
          // Já recebeu todas as células do barco
 
          collections = mongoUtils.getDriver();
@@ -247,14 +245,13 @@ io.on('connection', (socket) => {
 
             matriz_sec = result[0].matrix;
 
-            console.log("teste" + cells.length);
+            // console.log("teste" + cells.length);
 
             for (var i = 0; i < cells.length; i++) {
-               console.log("i" + i);
 
                matriz_sec[cells[i][0]][cells[i][1]] = 1;
 
-               console.log("x" + matriz_sec[cells[i][0]][cells[i][1]]);
+               // console.log("x" + matriz_sec[cells[i][0]][cells[i][1]]);
 
             }
 
@@ -268,7 +265,6 @@ io.on('connection', (socket) => {
 
             cells = [];
 
-            // console.log("y" + matriz_sec[coord[1]][coord[0]]);
 
 
          });

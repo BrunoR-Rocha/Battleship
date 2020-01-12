@@ -197,22 +197,25 @@
             $('#ready').hide();
             $('#turn').show();
             $('#wait_turn').hide();
-            $("#canvas-grid2").css("pointer-events","all");
+            $("#canvas-grid2").css("pointer-events", "all");
         }
 
         function handleWaitFire() {
             $('#ready').hide();
             $('#turn').hide();
             $('#wait_turn').show();
-            $("#canvas-grid2").css("pointer-events","none");
+            $("#canvas-grid2").css("pointer-events", "none");
         }
 
-        var save = [];
+        var player = [];
+        var opponent = [];
 
         for (var i = 0; i < 10; i++) {
-            save[i] = [];
+            player[i] = [];
+            opponent[i] = [];
             for (var j = 0; j < 10; j++) {
-                save[i][j] = 0;
+                player[i][j] = 0;
+                opponent[i][j] = 0;
             }
         }
 
@@ -279,13 +282,13 @@
             var found = false;
             for (var i = 0; i < val; i++) {
                 if ($('#rotate').text() == "Horizontal") {
-                    if (save[local.y + i][local.x] == 1) {
+                    if (player[local.y + i][local.x] == 1) {
                         found = true;
 
                     }
                 }
                 if ($('#rotate').text() == "Vertical") {
-                    if (save[local.y][local.x + i] == 1) {
+                    if (player[local.y][local.x + i] == 1) {
                         found = true;
                     }
                 }
@@ -312,15 +315,15 @@
                     var coord = []
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
-                            save[local.y][local.x + i] = 1;
+                            player[local.y][local.x + i] = 1;
                             id = $("#ref").val();
-                            coord = [local.y, local.x + i, val,id]
+                            coord = [local.y, local.x + i, val, id];
 
                             socket.emit('place', coord);
                         } else {
-                            save[local.y + i][local.x] = 1;
+                            player[local.y + i][local.x] = 1;
                             id = $("#ref").val();
-                            coord = [local.y + i, local.x, val,id]
+                            coord = [local.y + i, local.x, val, id];
 
                             socket.emit('place', coord);
                         }
@@ -333,7 +336,7 @@
 
             // for (var i = 0; i < 10; i++) {
             //     for (var j = 0; j < 10; j++) {
-            //         console.log(save[i][j]);
+            //         console.log(player[i][j]);
             //     }
             // }
 
@@ -368,6 +371,9 @@
             if (shipOnBoard >= 14) {
                 var pos = getCanvasCoordinates(e, canvas[1]);
                 var local = getSquare(pos.x, pos.y);
+
+                opponent[local.y][local.x] = 1;
+
                 socket.emit('tiro', local);
             }
 
@@ -418,7 +424,7 @@
                             context[gridIndex].fillStyle = '#4477FF';
                         }
                     }
-                    if (save[i][j] != 1) {
+                    if (player[i][j] != 1) {
 
                         // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
                         // Para grid do utilizador atual
@@ -436,6 +442,20 @@
                         }
                         // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
                     } else if (gridIndex == 0) {
+                        context[gridIndex].fillStyle = '#4477FF';
+                    }
+
+                    if (opponent[i][j] != 1) {
+
+                        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+                        // Para grid do utilizador atual
+                        if (gridIndex == 1) {
+                            if (j === squareHover.x && i === squareHover.y) {
+                                context[gridIndex].fillStyle = '#4477FF';
+                            }
+                        }
+                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
+                    } else if (gridIndex == 1) {
                         context[gridIndex].fillStyle = '#4477FF';
                     }
 
