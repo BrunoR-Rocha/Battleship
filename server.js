@@ -208,12 +208,58 @@ io.on('connection', (socket) => {
 
    socket.on('tiro', function (local) {
       var game = users[socket.id].jogo; // aqui obtens a informação do jogo
-
+      
+      collections = mongoUtils.getDriver();
+      
       //mudança de turnos quando se da um tiro
       if (game.turno == 0) {
 
          console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
+         
+         // aqui é possivel obter a matriz do oponente? conseguimos obter o id do jogo e supostamente o id dos players
+         //
+         //console.log(users[socket.id].jogo)
+
+         // arranjar alguma maneira de obter o id do oponente
+         //
+
+         //var id_opponent = ...
+         /* 
+            var hit = collections.collection('games').find({
+                  //id: id_opponent, // id do oponente
+                  game_id: game.id
+               }).toArray(function (err, result) {
+                  if (err)
+                     throw err;
+
+                  console.log(0 + " " + result[0]);
+                  console.log(1 + " " + result[1]);
+
+                  if(result[0])
+                  {
+                     var matriz_adv = []
+                     matriz_adv = result[0].matrix;
+
+                     // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
+                     /* 
+                        collections.collection('games').updateOne({
+                           id: id_opponent,
+                           game_id: 
+                        }, {
+                           $set: {
+                              matrix: matriz_sec
+                           }
+                        });
+                        socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
+                     */
+                  /*
+                  }
+               })
+            })
+         */
+
          //se acertar em algum barco.. continua
+
 
          //se nao acertar muda de turno
          game.turno = 1;
@@ -236,10 +282,6 @@ io.on('connection', (socket) => {
             socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
          }
       }
-
-      collections = mongoUtils.getDriver();
-
-
    });
 
 
@@ -261,7 +303,7 @@ io.on('connection', (socket) => {
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
 
-         // collections.collection('games').remove({});
+         collections.collection('games').remove({});
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
@@ -291,16 +333,29 @@ io.on('connection', (socket) => {
                   matrix: matriz_sec
                }
             });
-
             cells = [];
-
-
-
          });
       }
-
-
    });
+
+   //sinal que o utilizador quer sair do jogo
+   socket.on('leave', function(){
+      /*
+         // se o jogo ainda nao tiver terminado ... 
+         //guarda o jogo por completo .. ultimos updates se necessario
+
+       socket.leave('game' + users[socket.id].inGame.id);
+      
+       users[socket.id].inGame = null; // deixa de ter um jogo associado
+       users[socket.id].player = null; // deixa de ter um numero de jogador em jogo
+      
+         io.to(socket.id).emit('sair');
+
+      //redireciona para a pagina main;
+         socket.emit('leaveGame', '/main');
+       */
+   });
+
 
    socket.on('pronto', function (id) {
       console.log("Jogador " + id + " está pronto");
