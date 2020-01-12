@@ -59,6 +59,7 @@
                 <h3>You - <%= name %></h3>
                 <input type="hidden" name="id" id="ref" value="<%= id %>">
                 <input type="hidden" name="game_id" id="game_id" value="">
+                <input type="hidden" name="opponent_id" id="opponent_id" value="">
                 <canvas id="canvas-grid1" width="361" height="361"></canvas>
             </div>
             <div class="col-md-6 player-grid text-center">
@@ -160,7 +161,7 @@
             return false;
         });
 
-        $('.leave_jogo').click(function(){
+        $('.leave_jogo').click(function () {
             socket.emit('leave');
         });
 
@@ -177,9 +178,12 @@
             socket.emit('join', $("#ref").val());
         }
 
-        function handleGameStart(game_id) {
+        function handleGameStart(shot) {
+            var game_id = shot[0];
+            var opponent_id = shot[1];
             console.log('game is starting' + game_id);
             $("#game_id").val(game_id);
+            $("#opponent_id").val(opponent_id);
             $('#waiting').hide();
             $('.panel-body').show();
             $('.col-md-4').show();
@@ -384,14 +388,16 @@
         });
 
         canvas[1].addEventListener('click', function (e) {
-
+            shot = [];
             if (shipOnBoard >= 14) {
                 var pos = getCanvasCoordinates(e, canvas[1]);
                 var local = getSquare(pos.x, pos.y);
 
                 opponent[local.y][local.x] = 1;
-
-                socket.emit('tiro', local);
+                opponent_id = $("#opponent_id").val();
+                game_id = $("#game_id").val();
+                shot.push(local,opponent_id,game_id);
+                socket.emit('tiro', shot);
             }
 
         });
