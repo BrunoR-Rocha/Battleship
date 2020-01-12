@@ -166,8 +166,8 @@
             socket.emit('join', $("#ref").val());
         }
 
-        function handleGameStart() {
-            console.log('game is starting');
+        function handleGameStart(game_id) {
+            console.log('game is starting' + game_id);
             $('#waiting').hide();
             $('.panel-body').show();
             $('.col-md-4').show();
@@ -317,13 +317,13 @@
                         if ($('#rotate').text() == "Vertical") {
                             player[local.y][local.x + i] = 1;
                             id = $("#ref").val();
-                            coord = [local.y, local.x + i, val, id];
+                            coord = [local.y, local.x + i, val, id, game_id]; // y, x, tamanho do barco, user_id
 
                             socket.emit('place', coord);
                         } else {
                             player[local.y + i][local.x] = 1;
                             id = $("#ref").val();
-                            coord = [local.y + i, local.x, val, id];
+                            coord = [local.y + i, local.x, val, id, game_id];
 
                             socket.emit('place', coord);
                         }
@@ -342,7 +342,7 @@
 
             if (shipOnBoard == 14) {
                 shipOnBoard++;
-                id = $("#ref").val();
+                id = $("#ref").val(); //id do user
 
                 socket.emit('pronto', id);
                 ready();

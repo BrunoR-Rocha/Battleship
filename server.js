@@ -281,7 +281,7 @@ io.on('connection', (socket) => {
             }
 
             collections.collection('games').updateOne({
-               id: coord[3]
+               id: coord[3],
             }, {
                $set: {
                   matrix: matriz_sec
