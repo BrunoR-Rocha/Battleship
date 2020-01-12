@@ -53,7 +53,7 @@
         <h4 id="ready"><%= name %> is ready</h4>
         <h4 id="turn">Its your turn now</h4>
         <h4 id="wait_turn">Wait for your turn</h4>
-
+        <a href="#" class="leave_jogo">Leave</a>
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -121,6 +121,11 @@
 
             socket.on('cant_Fire', handleWaitFire);
 
+            /*
+            socket.on('leaveGame', Url => {
+                    window.location = Url;
+            });
+            */
         });
 
 
@@ -153,6 +158,10 @@
             socket.emit('message', $('#chat_message').val());
             $('#chat_message').val('');
             return false;
+        });
+
+        $('.leave_jogo').click(function(){
+            socket.emit('leave');
         });
 
         function handleConnection() {
