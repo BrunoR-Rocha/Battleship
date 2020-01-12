@@ -197,12 +197,14 @@
             $('#ready').hide();
             $('#turn').show();
             $('#wait_turn').hide();
+            $("#canvas-grid2").css("pointer-events","all");
         }
 
         function handleWaitFire() {
             $('#ready').hide();
             $('#turn').hide();
             $('#wait_turn').show();
+            $("#canvas-grid2").css("pointer-events","none");
         }
 
         var save = [];

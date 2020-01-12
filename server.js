@@ -193,7 +193,7 @@ io.on('connection', (socket) => {
 
          console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
          //se acertar em algum barco.. continua
-
+      
          //se nao acertar muda de turno
          game.turno = 1;
 
@@ -341,7 +341,7 @@ app.post('/register', function (req, res) {
          }).toArray(function (err, result) {
             if (err)
                throw err;;
-            //console.log(result);
+            //verifica se existe mais algum utilizador com aquele email
             if (!result[0]) {
                var dados = {
                   "name": name,
