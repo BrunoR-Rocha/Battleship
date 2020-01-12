@@ -58,6 +58,7 @@
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
                 <input type="hidden" name="id" id="ref" value="<%= id %>">
+                <input type="hidden" name="game_id" id="game_id" value="">
                 <canvas id="canvas-grid1" width="361" height="361"></canvas>
             </div>
             <div class="col-md-6 player-grid text-center">
@@ -168,6 +169,7 @@
 
         function handleGameStart(game_id) {
             console.log('game is starting' + game_id);
+            $("#game_id").val(game_id);
             $('#waiting').hide();
             $('.panel-body').show();
             $('.col-md-4').show();
@@ -312,17 +314,17 @@
             if (amo > 0) {
                 // Se não encontrou barcos, "pinta"
                 if (found == false && wall == false) {
-                    var coord = []
+                    var coord = [];
+                    id = $("#ref").val();
+                    game_id = parseInt($("#game_id").val());
                     for (var i = 0; i < val; i++) {
                         if ($('#rotate').text() == "Vertical") {
                             player[local.y][local.x + i] = 1;
-                            id = $("#ref").val();
                             coord = [local.y, local.x + i, val, id, game_id]; // y, x, tamanho do barco, user_id
 
                             socket.emit('place', coord);
                         } else {
                             player[local.y + i][local.x] = 1;
-                            id = $("#ref").val();
                             coord = [local.y + i, local.x, val, id, game_id];
 
                             socket.emit('place', coord);

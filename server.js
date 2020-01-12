@@ -157,7 +157,7 @@ io.on('connection', (socket) => {
          for (let i = 0; i < players.length; i++) {
             dados = {
                "id": user_id[i],
-               "name":user_name[i],
+               "name": user_name[i],
                "matrix": matrix,
                "game_id": game.id
             }
@@ -256,6 +256,8 @@ io.on('connection', (socket) => {
          // Já recebeu todas as células do barco
 
          collections = mongoUtils.getDriver();
+         console.log(coord[4] + "game_id ");
+         
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
 
@@ -263,7 +265,8 @@ io.on('connection', (socket) => {
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
-            id: coord[3] //coord[3] -> user_id
+            id: coord[3], //coord[3] -> user_id
+            game_id: coord[4]
          }).toArray(function (err, result) {
             if (err)
                throw err;
@@ -282,6 +285,7 @@ io.on('connection', (socket) => {
 
             collections.collection('games').updateOne({
                id: coord[3],
+               game_id: coord[4]
             }, {
                $set: {
                   matrix: matriz_sec
