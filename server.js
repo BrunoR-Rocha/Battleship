@@ -556,18 +556,12 @@ io.on('connection', (socket) => {
       users[socket.id].jogo = null; // deixa de ter um jogo associado
       users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
 
-      console.log(users);
-
-      //redireciona para a pagina main; FUNCIONANDO MAL!
-      socket.emit('leaveGame', '/main');
-
-      //console.log("User want to leave");
+      //redireciona para a pagina main; 
+      //efetuado simultaneamente atraves de um pedido POST
    });
-
 
    socket.on('pronto', function (id) {
       console.log("Jogador " + id + " está pronto");
-
       ready.push(id);
 
       if (ready.length == 2) {
@@ -607,7 +601,6 @@ function getGamersWaiting(room) {
 
    return gamers;
 }
-
 
 app.post('/register', function (req, res) {
    var name = req.body.name;
@@ -651,20 +644,13 @@ app.post('/register', function (req, res) {
    }
 });
 
-var main_data = [];
-
-app.get('/main', (req, res) => {
-   //name
-   //id
-   //valores transmitidos no leave
-
-   /*
-   res.render('main', {
-      name:
-      id:
+//rota que trata do pedido para ir para a pagina principal quando sai de um jogo
+//os valores sao passados pela submissao de um formulario com valores hidden na pagina de jogo
+app.post('/mainMenu', (req, res) => {
+      res.render('main', {
+      name: req.body.name,
+      id: req.body.id,
    })
-   */
-   res.redirect('/mygames');
 })
 
 app.post('/main', function (req, res) {

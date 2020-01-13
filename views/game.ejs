@@ -56,10 +56,16 @@
         <h4 id="winner">Congratulations!! You've Won</h4>
         <h4 id="looser">Better Luck next time</h4>
 
-        <a href="#" class="leave_jogo">Leave</a>
+        <form name="input" class="leave_jogo" action="/mainMenu" method="post">
+            <input type="hidden" name="name" id="name" value="<%= name %>">
+            <input type="hidden" name="id" id="ref" value="<%= id %>">
+            <button type="submit">Leave</button>
+        </form>
+        
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
+                <input type="hidden" name="name" id="name" value="<%= name %>">
                 <input type="hidden" name="id" id="ref" value="<%= id %>">
                 <input type="hidden" name="game_id" id="game_id" value="">
                 <input type="hidden" name="opponent_id" id="opponent_id" value="">
@@ -139,16 +145,10 @@
             socket.on('cant_Fire', handleWaitFire);
 
             socket.on('setOpponent', function (opponent_id) {
-                // alert(opponent_id);
                 $("#opponent_id").val(opponent_id);
             });
 
             socket.on('avisoSaida', handleWarning);
-
-            socket.on('leaveGame', Url => {
-                window.location = Url;
-            });
-
 
             socket.on('celulaAlterou', alterarCelula);
 
@@ -189,7 +189,7 @@
             return false;
         });
 
-        $('.leave_jogo').click(function () {
+        $('.leave_jogo').submit(function () {
             socket.emit('leave');
         });
 
