@@ -14,12 +14,16 @@
    <div class="nav" v-bind:style="estilo_nav">
 
       <form name="input" action="/mainMenu" method="post" >
-         <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
-         <input type="hidden" id="name" name="user_name" value="<%= name %>">
+         <input type="hidden" id="user_id" name="id" value="<%= id %>">
+         <input type="hidden" id="name" name="name" value="<%= name %>">
          <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{home}}</button></span>
       </form>
          
-      <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
+      <form name="input" action="/mygames" method="get" >
+         <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+         <input type="hidden" id="name" name="user_name" value="<%= name %>">
+         <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{jogos}}</button></span>
+         </form>
 
       <form name="input" action="/profile" method="get" >
          <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
