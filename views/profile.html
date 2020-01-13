@@ -19,16 +19,22 @@
       cursor: pointer;
     }
 
-    a {
+    .a {
+      display: block;
       color: white;
     }
+
+
+}
+
   </style>
 
   <div class="nav" v-bind:style="estilo_nav">
 
-    <a href="/main"><span v-bind:style="estilo_link">{{home}}</span></a>
-    <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
-    <a href="/profile"><span v-bind:style="estilo_link">{{perfil}}</span></a>
+      <a href="/main"><span v-bind:style="estilo_link">{{home}}</span></a>
+      <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
+      <a href="/profile"><span v-bind:style="estilo_link">{{perfil}}</span></a>
+
 
   </div>
 
@@ -41,37 +47,19 @@
   </div>
 
   <div class="container">
-    <div class="games">
-      <span v-bind:style="estilo_games">
-        {{jogos}}
+    <div class="profile">
+      <span v-bind:style="estilo_subtitulo">
+        {{subtitulo}}
       </span>
-    </div>
-  </div>
-  <div class="container">
-  <div class="row">
-    <% for(i=0; i<games.length; i++) { %>
-    <% if(games[i].opponent_name != null && games[i].game_end == 0) { %>
-    <div class="card-sm" >
-      <div class="card-body">
-        <h2 class="card-title"><%- games[i].opponent_name %></h2>
-        </p>
-        <a href="#" class="btn btn-success">Continue game</a>
-      </div>
-    </div>
-    <% } %>
 
-    <% if(games[i].opponent_name != null && games[i].game_end == 1) { %>
-    <div class="card-sm" >
-      <div class="card-body">
-        <h2 class="card-title"><%- games[i].opponent_name %></h2>
-        </p>
-        <a href="#" class="btn btn-warning">Ended game</a>
-      </div>
+      <span v-bind:style="estilo_pontuacao">
+        {{pontuacao}}
+      </span>
+
     </div>
-    <% } %>
-    <% } %>
   </div>
-  </div>
+
+
 
   <script>
     var nav = new Vue({
@@ -115,11 +103,12 @@
         }
       },
     });
-    var games = new Vue({
-      el: '.games',
+    var profile = new Vue({
+      el: '.profile',
       data: {
-        jogos: 'My Games',
-        estilo_games: {
+        subtitulo: 'My Profile',
+        pontuacao: 'HighScore',
+        estilo_subtitulo: {
           fontSize: '30px',
           margin: '30px auto',
           padding: '40px'

@@ -57,7 +57,6 @@ app.get('/login', (req, res) => {
    res.sendFile(__dirname + "/views" + '/login.html');
 });
 
-
 var user_id = [];
 var user_name = [];
 var userId = 0;
@@ -145,6 +144,31 @@ app.get('/mygames', (req, res) => {
    // res.render('mygames.html');
 
    // res.sendFile(__dirname + "/views" + '/mygames.html');
+
+})
+
+// Falta depois buscar dados de Vitoria/Derrota por exemplo.
+
+app.get('/profile', (req, res) => {
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+      console.log(result);
+      res.render('profile.html', {
+         name: name,
+         id: id,
+         games: result
+      });
+   });
+
 
 })
 
