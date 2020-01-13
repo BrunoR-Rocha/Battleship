@@ -3,6 +3,7 @@ var http = require('http');
 var ejs = require('ejs');
 var socketio = require('socket.io');
 var bodyParser = require('body-parser');
+var Vue = require('vue');
 
 var app = express();
 app.set('view engine', 'ejs');
@@ -55,9 +56,23 @@ app.get('/login', (req, res) => {
    res.sendFile(__dirname + "/views" + '/login.html');
 });
 
+
+var user_id = [];
+var user_name = [];
+var userId = 0;
+var counter0 = 0;
+var counter1 = 0;
+
 app.get('/game', (req, res) => {
    var name = req.query.user_name;
    var id = req.query.user_id;
+   userId = id;
+
+   user_id.push(id);
+   user_name.push(name);
+
+
+
    var ships = [{
          'type': 'Aircraft carrier',
          'size': 5,
@@ -92,22 +107,7 @@ app.get('/game', (req, res) => {
       }
    ];
 
-   var matrix = [];
-   for (var i = 0; i < 10; i++) {
-      matrix[i] = [];
-      for (var j = 0; j < 10; j++) {
-         matrix[i][j] = 0;
-      }
-   }
 
-   var dados = {
-      "name": name,
-      "id": id,
-      "matrix": matrix
-   }
-
-   collections = mongoUtils.getDriver();
-   collections.collection('games').insertOne(dados);
 
    res.render('game', {
       name: name,
@@ -116,8 +116,31 @@ app.get('/game', (req, res) => {
    });
 })
 
+
+//var MyGames = require('./views/mygames.vue');
+
 app.get('/mygames', (req, res) => {
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+   });
+
+   res.render('mygames', {
+      name: name,
+      id: id,
+      games: games
+   });
+
    res.sendFile(__dirname + "/views" + '/mygames.html');
+
 })
 
 io.on('connection', (socket) => {
@@ -141,11 +164,56 @@ io.on('connection', (socket) => {
       // console.log(io.sockets.adapter.rooms['waiting players']);
       var players = getGamersWaiting('espera');
 
-      console.log(players.length);
+      // console.log(players.length);
 
       if (players.length >= 2) {
 
          var game = new BattleShip(gameCount++, players[0].id, players[1].id);
+
+         var matrix = [];
+         for (var i = 0; i < 10; i++) {
+            matrix[i] = [];
+            for (var j = 0; j < 10; j++) {
+               matrix[i][j] = 0;
+            }
+         }
+
+
+         var dados = {};
+         collections = mongoUtils.getDriver();
+         var opponent_id = 0;
+
+         for (let i = 0; i < players.length; i++) {
+            if (i == 0) {
+               opponent_id = user_id[i + 1]
+               dados = {
+                  "id": user_id[i],
+                  "opponent_id": opponent_id,
+                  "name": user_name[i],
+                  "matrix": matrix,
+                  "game_id": game.id
+               }
+            }
+            if (i == 1) {
+               opponent_id = user_id[i - 1]
+               dados = {
+                  "id": user_id[i],
+                  "opponent_id": opponent_id,
+                  "name": user_name[i],
+                  "matrix": matrix,
+                  "game_id": game.id
+               }
+            }
+            collections.collection('games').insertOne(dados);
+         }
+
+
+         // var dados = [game.id, ];
+         // io.to('game' + game.id).emit('getOponent', dados);
+
+         user_id = [];
+         user_name = [];
+
 
          //console.log(game.players);
 
@@ -160,6 +228,7 @@ io.on('connection', (socket) => {
          users[players[1].id].numero = 1;
          users[players[1].id].jogo = game;
          //console.log(players[0]);
+
 
          io.to('game' + game.id).emit('start', game.id);
          console.log(io.sockets.adapter.rooms['game' + game.id]);
@@ -185,35 +254,184 @@ io.on('connection', (socket) => {
       }
    });
 
-   socket.on('tiro', function (local) {
+
+
+
+   socket.on('getOpponent', function (dados) {
+
+      collections = mongoUtils.getDriver();
+
+      var hit = collections.collection('games').find({
+         id: dados[0],
+         game_id: parseInt(dados[1])
+      }).toArray(function (err, result) {
+         if (err)
+            throw err;
+
+
+         if (result[0]) {
+
+            socket.emit("setOpponent", result[0].opponent_id);
+            // console.log("CLAUDIO" + result[0].opponent_id);
+            // io.emit('setOpponent', result[0].opponent_id);
+
+         }
+
+
+      });
+
+   });
+
+   socket.on('tiro', function (shot) {
       var game = users[socket.id].jogo; // aqui obtens a informação do jogo
+
+      collections = mongoUtils.getDriver();
 
       //mudança de turnos quando se da um tiro
       if (game.turno == 0) {
 
-         console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
-         //se acertar em algum barco.. continua
+         console.log(game.turno + " tiro efetuado no " + shot[0].x + ' , ' + shot[0].y);
 
-         //se nao acertar muda de turno
-         game.turno = 1;
+         console.log(shot[1] + "id do oponente");
+         console.log(shot[2]);
 
-         if (game.turno == users[socket.id].numero) {
-            // console.log(socket.id + "pode disparar");
-            io.to(socket.id).emit('cant_Fire');
-            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
-         }
-         // console.log(game.turno);
+         var matriz_adv = [];
+
+         var hit = collections.collection('games').find({
+            id: shot[1],
+            game_id: parseInt(shot[2])
+         }).toArray(function (err, result) {
+            if (err)
+               throw err;
+
+
+            if (result[0]) {
+
+               matriz_adv = result[0].matrix;
+               // matriz_adv[0][0] = 3;
+
+               console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
+
+               if (matriz_adv[shot[0].x][shot[0].y] == 1) {
+                  counter0++; //adiciona a contador 
+
+                  // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
+                  matriz_adv[shot[0].x][shot[0].y] = 2;
+
+                  //verifica se ja chegou ao numero maximo dos barcos = 14
+                  if (counter0 == 14) {
+
+                     io.to(socket.id).emit('gameWinner');
+                     socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+                  }
+
+
+                  game.turno = 0;
+
+               } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
+                  matriz_adv[shot[0].x][shot[0].y] = 3;
+                  game.turno = 1; // Se falhou, muda o turno, caso contrário continua a disparar
+               }
+
+               collections.collection('games').updateOne({
+                  id: shot[1],
+                  game_id: parseInt(shot[2])
+               }, {
+                  $set: {
+                     matrix: matriz_adv
+                  }
+               });
+
+               console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
+               var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y, shot[1]];
+               io.to('game' + game.id).emit('celulaAlterou', dados);
+
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('celulaAlterou', dados);
+               // io.to('game' + game.id).emit('celulaAlterou', dados);
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('celulaAlterou', 'A');
+               // socket.broadcast.to('game' + game.id).emit('celulaAlterou', 'A');
+
+
+
+
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
+               if (game.turno == users[socket.id].numero) {
+                  // console.log(socket.id + "pode disparar");
+                  io.to(socket.id).emit('cant_Fire');
+                  socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
+               }
+            }
+         });
+         console.log("contador 0 " + counter0);
+
       } else if (game.turno == 1) {
+         console.log(game.turno + " tiro efetuado no " + shot[0].x + ' , ' + shot[0].y);
 
-         console.log(game.turno + " tiro efetuado no " + local.x + ' , ' + local.y);
+         console.log(shot[1] + "id do oponente");
+         console.log(shot[2]);
 
-         game.turno = 0;
+         var matriz_adv = [];
 
-         if (game.turno == users[socket.id].numero) {
-            // console.log(socket.id + "pode disparar");
-            io.to(socket.id).emit('cant_Fire');
-            socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
-         }
+         var hit = collections.collection('games').find({
+            id: shot[1],
+            game_id: parseInt(shot[2])
+         }).toArray(function (err, result) {
+            if (err)
+               throw err;
+
+
+            if (result[0]) {
+
+               matriz_adv = result[0].matrix;
+               // matriz_adv[0][0] = 3;
+
+               console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
+
+               if (matriz_adv[shot[0].x][shot[0].y] == 1) {
+                  counter1++ //adiciona a contador
+
+                  matriz_adv[shot[0].x][shot[0].y] = 2;
+
+                  if (counter1 == 14) {
+                     io.to(socket.id).emit('gameWinner');
+                     socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+                  }
+
+                  // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
+
+                  game.turno = 1;
+                  //adiciona a contador
+               } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
+                  matriz_adv[shot[0].x][shot[0].y] = 3;
+                  game.turno = 0; // Se falhou, muda o turno, caso contrário continua a disparar
+               }
+
+               collections.collection('games').updateOne({
+                  id: shot[1],
+                  game_id: parseInt(shot[2])
+               }, {
+                  $set: {
+                     matrix: matriz_adv
+                  }
+               });
+
+
+               console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
+               var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y, shot[1]];
+               io.to('game' + game.id).emit('celulaAlterou', dados);
+
+               // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
+               // console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
+
+               if (game.turno == users[socket.id].numero) {
+                  // console.log(socket.id + "pode disparar");
+                  io.to(socket.id).emit('cant_Fire');
+                  socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
+               }
+
+            }
+         })
+         console.log("Contador 1 " + counter1);
       }
    });
 
@@ -225,57 +443,77 @@ io.on('connection', (socket) => {
    socket.on('place', function (coord) {
 
       cells.push([coord[1], coord[0]]);
-      console.log(cells.length + " - " + coord[2]);
 
 
       if (cells.length == coord[2]) {
-         console.log(cells);
          // Já recebeu todas as células do barco
 
          collections = mongoUtils.getDriver();
+         console.log(coord[4] + "game_id ");
+
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
+
 
          // collections.collection('games').remove({});
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
-            id: coord[3]
+            id: coord[3], //coord[3] -> user_id
+            game_id: coord[4]
          }).toArray(function (err, result) {
             if (err)
                throw err;
 
             matriz_sec = result[0].matrix;
 
-            console.log("teste" + cells.length);
+            // console.log("teste" + cells.length);
 
             for (var i = 0; i < cells.length; i++) {
-               console.log("i" + i);
 
                matriz_sec[cells[i][0]][cells[i][1]] = 1;
 
-               console.log("x" + matriz_sec[cells[i][0]][cells[i][1]]);
+               // console.log("x" + matriz_sec[cells[i][0]][cells[i][1]]);
 
             }
 
             collections.collection('games').updateOne({
-               id: coord[3]
+               id: coord[3],
+               game_id: coord[4]
             }, {
                $set: {
                   matrix: matriz_sec
                }
             });
-
             cells = [];
-
-            // console.log("y" + matriz_sec[coord[1]][coord[0]]);
-
-
          });
       }
-
-
    });
+
+   //sinal que o utilizador quer sair do jogo
+
+   socket.on('leave', function () {
+
+      // se o jogo ainda nao tiver terminado ... 
+      //guarda o jogo por completo .. ultimos updates se necessario
+
+      socket.broadcast.to('game' + users[socket.id].jogo.id).emit('avisoSaida', {
+         message: 'Opponent has left the game'
+      });
+
+      socket.leave('game' + users[socket.id].jogo.id);
+
+      users[socket.id].jogo = null; // deixa de ter um jogo associado
+      users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
+
+      console.log(users);
+
+      //redireciona para a pagina main; FUNCIONANDO MAL!
+      socket.emit('leaveGame', '/main');
+
+      //console.log("User want to leave");
+   });
+
 
    socket.on('pronto', function (id) {
       console.log("Jogador " + id + " está pronto");
@@ -341,7 +579,7 @@ app.post('/register', function (req, res) {
          }).toArray(function (err, result) {
             if (err)
                throw err;;
-            //console.log(result);
+            //verifica se existe mais algum utilizador com aquele email
             if (!result[0]) {
                var dados = {
                   "name": name,
@@ -362,6 +600,22 @@ app.post('/register', function (req, res) {
       console.log("Erro de insercao");
    }
 });
+
+var main_data = [];
+
+app.get('/main', (req, res) => {
+   //name
+   //id
+   //valores transmitidos no leave
+
+   /*
+   res.render('main', {
+      name:
+      id:
+   })
+   */
+   res.redirect('/mygames');
+})
 
 app.post('/main', function (req, res) {
 
