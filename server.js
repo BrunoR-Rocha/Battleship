@@ -199,7 +199,8 @@ io.on('connection', (socket) => {
                   "opponent_id": opponent_id,
                   "opponent_name" : opponent_name,
                   "matrix": matrix,
-                  "game_id": game.id
+                  "game_id": game.id,
+                  "game_end" : 0
                }
             }
             if (i == 1) {
@@ -211,7 +212,8 @@ io.on('connection', (socket) => {
                   "opponent_id": opponent_id,
                   "opponent_name" : opponent_name,
                   "matrix": matrix,
-                  "game_id": game.id
+                  "game_id": game.id,
+                  "game_end" : 0
                }
             }
             collections.collection('games').insertOne(dados);
@@ -333,6 +335,25 @@ io.on('connection', (socket) => {
 
                      io.to(socket.id).emit('gameWinner');
                      socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+
+                     collections.collection('games').updateOne({
+                        id: shot[1],
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end : 1
+                        }
+                     });
+
+                     collections.collection('games').updateOne({
+                        id: result[0].opponent_id,
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end : 1
+                        }
+                     });
+   
                   }
 
 
@@ -405,6 +426,25 @@ io.on('connection', (socket) => {
                   if (counter1 == 14) {
                      io.to(socket.id).emit('gameWinner');
                      socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+
+                     collections.collection('games').updateOne({
+                        id: shot[1],
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end : 1
+                        }
+                     });
+
+                     collections.collection('games').updateOne({
+                        id: result[0].opponent_id,
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end: 1
+                        }
+                     });
+
                   }
 
                   // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
