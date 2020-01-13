@@ -47,28 +47,31 @@
       </span>
     </div>
   </div>
-
-  <% for(i=0; i<games.length; i++) { %>
-  <% if(games[i].opponent_name != null && games[i].game_end == 0) { %>
-  <div class="card" style="width: 18rem;">
-    <div class="card-body">
-      <h2 class="card-title"><%- games[i].opponent_name %></h2>
-      </p>
-      <a href="#" class="btn btn-primary">Continue game</a>
+  <div class="container">
+  <div class="row">
+    <% for(i=0; i<games.length; i++) { %>
+    <% if(games[i].opponent_name != null && games[i].game_end == 0) { %>
+    <div class="card-sm" >
+      <div class="card-body">
+        <h2 class="card-title"><%- games[i].opponent_name %></h2>
+        </p>
+        <a href="#" class="btn btn-success">Continue game</a>
+      </div>
     </div>
-  </div>
-  <% } %>
+    <% } %>
 
-  <% if(games[i].opponent_name != null && games[i].game_end == 1) { %>
-  <div class="card" style="width: 18rem;">
-    <div class="card-body">
-      <h2 class="card-title"><%- games[i].opponent_name %></h2>
-      </p>
-      <a href="#" class="btn btn-primary">See game</a>
+    <% if(games[i].opponent_name != null && games[i].game_end == 1) { %>
+    <div class="card-sm" >
+      <div class="card-body">
+        <h2 class="card-title"><%- games[i].opponent_name %></h2>
+        </p>
+        <a href="#" class="btn btn-warning">Ended game</a>
+      </div>
     </div>
+    <% } %>
+    <% } %>
   </div>
-  <% } %>
-  <% } %>
+  </div>
 
   <script>
     var nav = new Vue({
