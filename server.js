@@ -3,6 +3,7 @@ var http = require('http');
 var ejs = require('ejs');
 var socketio = require('socket.io');
 var bodyParser = require('body-parser');
+var Vue = require('vue');
 
 var app = express();
 app.set('view engine', 'ejs');
@@ -16,7 +17,7 @@ const bcrypt = require("bcryptjs");
 
 var BattleShip = require('./app/Game');
 
-const PORT = 3000;
+const PORT = 4000;
 
 server.listen(PORT, function () {
    console.log('Server is running');
@@ -114,8 +115,13 @@ app.get('/game', (req, res) => {
    });
 })
 
+
+//var MyGames = require('./views/mygames.vue');
+
 app.get('/mygames', (req, res) => {
+
    res.sendFile(__dirname + "/views" + '/mygames.html');
+
 })
 
 io.on('connection', (socket) => {
