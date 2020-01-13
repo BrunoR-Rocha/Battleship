@@ -7,6 +7,7 @@ var Vue = require('vue');
 
 var app = express();
 app.set('view engine', 'ejs');
+
 app.engine('html', require('ejs').renderFile);
 
 var mongoUtils = require('./mongoUtils');
@@ -63,14 +64,48 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-   res.sendFile(__dirname + "/views" + '/register.html');
+   res.render('register.html',{
+      message: '',
+      messageClass: ''
+   });
 });
 
 app.get('/login', (req, res) => {
-   res.sendFile(__dirname + "/views" + '/login.html');
+   res.render('login.html',{
+      message: '',
+      messageClass: ''
+   });
+});
+
+app.get('/profile',(req, res) =>{
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+   console.log(name + id);
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+      console.log(result);
+     res.render('profile', {
+         name: name,
+         id: id,
+         games: result
+      });
+   });
 });
 
 
+app.get('/logout', (req, res) =>{
+   res.render('login.html',{
+      message: 'You have left the Battleship Game successfully',
+      messageClass: 'alert-success'
+   });
+})
 var user_id = [];
 var user_name = [];
 var userId = 0;
@@ -166,6 +201,33 @@ app.get('/mygames', (req, res) => {
    // res.render('mygames.html');
 
    // res.sendFile(__dirname + "/views" + '/mygames.html');
+
+});
+
+
+
+// Falta depois buscar dados de Vitoria/Derrota por exemplo.
+
+app.get('/profile', (req, res) => {
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+      console.log(result);
+      res.render('profile.html', {
+         name: name,
+         id: id,
+         games: result
+      });
+   });
+
 
 })
 
@@ -662,6 +724,10 @@ app.post('/register', function (req, res) {
 
    if (!name || !email || !password) {
       console.log("Incomplete Information");
+      res.render('register.html',{
+            message: 'Incomplete Information',
+            messageClass: 'alert-danger'
+      });
    } else if (password == password2) {
 
       bcrypt.hash(password, 8, (err, hashedPassword) => {
@@ -681,7 +747,6 @@ app.post('/register', function (req, res) {
                   "email": email,
                   "password": hashedPassword,
                }
-
                collections.collection('users').insertOne({ dados }, {
                   $currentDate: {
                      lastModified: true,
@@ -691,7 +756,10 @@ app.post('/register', function (req, res) {
                res.redirect('/login');
             } else {
                console.log("Utilizador já  registado");
-               res.redirect('/register');
+               res.render('register.html',{
+                  message: 'User already Registered',
+                  messageClass: 'alert-danger'
+            });
             }
          })
       });
@@ -723,7 +791,10 @@ app.post('/main', function (req, res) {
          throw err;
 
       if (!result[0]) {
-         res.redirect('/login');
+         res.render('login.html',{
+            message: 'No Users were found with this email, try again!',
+            messageClass: 'alert-danger'
+         });
       } else {
          // console.log(result[0].password);
          bcrypt.compare(password, result[0].password, (err, isMatch) => {
@@ -736,7 +807,10 @@ app.post('/main', function (req, res) {
                });
             } else {
                console.log("Invalid Password");
-               res.redirect('/login'); // mostrar mensagem de erro - password incorreta
+               res.render('login.html',{
+                  message: 'Not Successful!!! The Password was invalid, please try again',
+                  messageClass: 'alert-danger'
+               }); // mostrar mensagem de erro - password incorreta
             }
          });
       }

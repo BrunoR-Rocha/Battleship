@@ -20,16 +20,24 @@
           margin:auto;
           width: 80%;
       }
+      #alert{
+         width: 60%;
+         padding: 10px;
+         font-size: 15px;
+         margin: auto;
+      }
 
   </style>
 
    <div class="container">
       <div class="title">
-         <span v-bind:style="estilo_titulo">
-            {{ titulo }}
-         </span> 
+         <a href="/"><span v-bind:style="estilo_titulo">{{titulo}}</span></a>
       </div>
    </div>
+
+      <div id="alert" class="alert <%= messageClass %>" role="alert">
+         <%= message %>
+     </div>
 
    <div class="container">
       <div class="row">
