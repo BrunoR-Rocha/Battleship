@@ -7,7 +7,6 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Battleship Game</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 </head>
 
@@ -20,17 +19,22 @@
       cursor: pointer;
     }
 
-    a {
+    .a {
+      display: block;
       color: white;
     }
+
+
+}
+
   </style>
 
   <div class="nav" v-bind:style="estilo_nav">
 
-    <a href="/mainMenu"><span v-bind:style="estilo_link">{{home}}</span></a>
-    <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
-    <a href="/profile"><span v-bind:style="estilo_link">{{perfil}}</span></a>
-    <a href="/logout"><span v-bind:style="estilo_link">{{logout}}</span></a>
+      <a href="/main"><span v-bind:style="estilo_link">{{home}}</span></a>
+      <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
+      <a href="/profile"><span v-bind:style="estilo_link">{{perfil}}</span></a>
+
 
   </div>
 
@@ -43,66 +47,19 @@
   </div>
 
   <div class="container">
-    <div class="games">
-      <span v-bind:style="estilo_games">
-        {{jogos}}
+    <div class="profile">
+      <span v-bind:style="estilo_subtitulo">
+        {{subtitulo}}
       </span>
-    </div>
-  </div>
-  <div class="container">
-    <div class="row">
-      <% for(i=0; i<games.length; i++) { %>
-      <% if(games[i].opponent_name != null && games[i].game_end == 0) { %>
-      <div class="card text-center">
-        <div class="card-header">
-          Keep playing
-        </div>
-        <div class="card-body">
-          <h5 class="card-title"><% games[i].opponent_name %></h5>
-          <p class="card-text">You are currently playing with <%- games[i].opponent_name %></p>
-          <a href="#" class="btn btn-warning">Keep playing</a>
-        </div>
-        <div class="card-footer text-muted">
-          2 days ago
-        </div>
-      </div>
-      <br>
-      <% } %>
 
-      <% if(games[i].opponent_name != null && games[i].game_end == 1 && games[i].won == 1) { %>
-      <div class="card text-center">
-        <div class="card-header">
-          You won
-        </div>
-        <div class="card-body">
-          <p class="card-text">You won a game against <%- games[i].opponent_name %></p>
-          <a href="#" class="btn btn-success">See game</a>
-        </div>
-        <div class="card-footer text-muted">
-          2 days ago
-        </div>
-      </div>
-      <br>
-      <% } %>
-      <% if(games[i].opponent_name != null && games[i].game_end == 1 && games[i].won == 0) { %>
-      <div class="card text-center">
-        <div class="card-header">
-          You lost
-        </div>
-        <div class="card-body">
-          <h5 class="card-title"><% games[i].opponent_name %></h5>
-          <p class="card-text">You lost a game against <%- games[i].opponent_name %></p>
-          <a href="#" class="btn btn-danger">See game</a>
-        </div>
-        <div class="card-footer text-muted">
-          2 days ago
-        </div>
-      </div>
-      <br>
-      <% } %>
-      <% } %>
+      <span v-bind:style="estilo_pontuacao">
+        {{pontuacao}}
+      </span>
+
     </div>
   </div>
+
+
 
   <script>
     var nav = new Vue({
@@ -111,9 +68,9 @@
         home: 'Home',
         jogos: 'My Games',
         perfil: 'My Profile',
-        logout: 'Logout',
+
         estilo_nav: {
-          justifyContent: 'space-around',
+          overflow: 'hidden',
           textAlign: 'center',
           backgroundColor: 'darkblue',
         },
@@ -146,11 +103,12 @@
         }
       },
     });
-    var games = new Vue({
-      el: '.games',
+    var profile = new Vue({
+      el: '.profile',
       data: {
-        jogos: 'My Games',
-        estilo_games: {
+        subtitulo: 'My Profile',
+        pontuacao: 'HighScore',
+        estilo_subtitulo: {
           fontSize: '30px',
           margin: '30px auto',
           padding: '40px'

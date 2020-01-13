@@ -86,13 +86,13 @@ app.get('/profile',(req, res) =>{
    });
 });
 
+
 app.get('/logout', (req, res) =>{
    res.render('login.html',{
       message: 'You have left the Battleship Game successfully',
       messageClass: 'alert-success'
    });
 })
-
 var user_id = [];
 var user_name = [];
 var userId = 0;
@@ -184,6 +184,31 @@ app.get('/mygames', (req, res) => {
 });
 
 
+
+// Falta depois buscar dados de Vitoria/Derrota por exemplo.
+
+app.get('/profile', (req, res) => {
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+      console.log(result);
+      res.render('profile.html', {
+         name: name,
+         id: id,
+         games: result
+      });
+   });
+
+
+})
 
 io.on('connection', (socket) => {
    console.log('Someone joined the server');
