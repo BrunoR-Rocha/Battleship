@@ -59,7 +59,7 @@
         <form name="input" class="leave_jogo" action="/mainMenu" method="post">
             <input type="hidden" name="name" id="name" value="<%= name %>">
             <input type="hidden" name="id" id="ref" value="<%= id %>">
-            <button type="submit">Leave</button>
+            <button type="submit" class="btn btn-danger">Leave</button>
         </form>
         
         <div class="rows">
@@ -155,6 +155,9 @@
             socket.on('gameWinner', handleWinner);
 
             socket.on('gameLoser', handleLooser);
+
+            socket.on('alert', handleAlert);
+
         });
 
 
@@ -192,6 +195,10 @@
         $('.leave_jogo').submit(function () {
             socket.emit('leave');
         });
+
+        function handleAlert(msg){
+            alert(msg);
+        }
 
         function handleConnection() {
             $('.panel-body').hide();
@@ -265,6 +272,7 @@
             $('#turn').hide();
             $('#wait_turn').hide();
             $("#canvas-grid2").css("pointer-events", "none");
+            alert("LOOOOSER!! Now you can leave the game!");
         }
 
         function handleWinner() {
@@ -272,6 +280,7 @@
             $('#turn').hide();
             $('#wait_turn').hide();
             $("#canvas-grid2").css("pointer-events", "none");
+            alert("You've Won, congratulations!!! Now you can leave the game!");
         }
 
 

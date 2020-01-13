@@ -611,6 +611,7 @@ app.post('/register', function (req, res) {
 
    if (!name || !email || !password) {
       console.log("Incomplete Information");
+      res.redirect('/register');
    } else if (password == password2) {
 
       bcrypt.hash(password, 8, (err, hashedPassword) => {
