@@ -7,6 +7,7 @@ var Vue = require('vue');
 
 var app = express();
 app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
 
 var mongoUtils = require('./mongoUtils');
 var User = require('./model/User');
@@ -131,15 +132,19 @@ app.get('/mygames', (req, res) => {
    }).toArray(function (err, result) {
       if (err)
          throw err;
+         console.log(result);
+         res.render('mygames.html', {
+            name: name,
+            id: id,
+            games: result
+          });
    });
 
-   res.render('mygames', {
-      name: name,
-      id: id,
-      games: games
-   });
 
-   res.sendFile(__dirname + "/views" + '/mygames.html');
+
+   // res.render('mygames.html');
+
+   // res.sendFile(__dirname + "/views" + '/mygames.html');
 
 })
 
@@ -182,24 +187,29 @@ io.on('connection', (socket) => {
          var dados = {};
          collections = mongoUtils.getDriver();
          var opponent_id = 0;
+         var opponent_name = "";
 
          for (let i = 0; i < players.length; i++) {
             if (i == 0) {
-               opponent_id = user_id[i + 1]
+               opponent_id = user_id[i + 1];
+               opponent_name = user_name[i + 1];
                dados = {
                   "id": user_id[i],
-                  "opponent_id": opponent_id,
                   "name": user_name[i],
+                  "opponent_id": opponent_id,
+                  "opponent_name" : opponent_name,
                   "matrix": matrix,
                   "game_id": game.id
                }
             }
             if (i == 1) {
-               opponent_id = user_id[i - 1]
+               opponent_id = user_id[i - 1];
+               opponent_name = user_name[i - 1];
                dados = {
                   "id": user_id[i],
-                  "opponent_id": opponent_id,
                   "name": user_name[i],
+                  "opponent_id": opponent_id,
+                  "opponent_name" : opponent_name,
                   "matrix": matrix,
                   "game_id": game.id
                }
