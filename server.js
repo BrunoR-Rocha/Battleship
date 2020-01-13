@@ -7,6 +7,7 @@ var Vue = require('vue');
 
 var app = express();
 app.set('view engine', 'ejs');
+
 app.engine('html', require('ejs').renderFile);
 
 var mongoUtils = require('./mongoUtils');
@@ -63,6 +64,34 @@ app.get('/login', (req, res) => {
    });
 });
 
+app.get('/profile',(req, res) =>{
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+   console.log(name + id);
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+      console.log(result);
+     res.render('profile', {
+         name: name,
+         id: id,
+         games: result
+      });
+   });
+});
+
+app.get('/logout', (req, res) =>{
+   res.render('login.html',{
+      message: 'You have left the Battleship Game successfully',
+      messageClass: 'alert-success'
+   });
+})
 
 var user_id = [];
 var user_name = [];
@@ -152,7 +181,9 @@ app.get('/mygames', (req, res) => {
 
    // res.sendFile(__dirname + "/views" + '/mygames.html');
 
-})
+});
+
+
 
 io.on('connection', (socket) => {
    console.log('Someone joined the server');
