@@ -190,7 +190,7 @@ io.on('connection', (socket) => {
          var opponent_name = "";
 
          for (let i = 0; i < players.length; i++) {
-            if (user_id[i] != null && opponent_id !=null) {
+            if (user_id[i] != null && opponent_id != null) {
 
                if (i == 0) {
                   opponent_id = user_id[i + 1];
@@ -202,7 +202,8 @@ io.on('connection', (socket) => {
                      "opponent_name": opponent_name,
                      "matrix": matrix,
                      "game_id": game.id,
-                     "game_end": 0
+                     "game_end": 0,
+                     "won": 0
                   }
                }
                if (i == 1) {
@@ -215,10 +216,16 @@ io.on('connection', (socket) => {
                      "opponent_name": opponent_name,
                      "matrix": matrix,
                      "game_id": game.id,
-                     "game_end": 0
+                     "game_end": 0,
+                     "won": 0,
+
                   }
                }
-               collections.collection('games').insertOne(dados);
+               collections.collection('games').insertOne(dados), {
+                  $currentDate: {
+                     $type: "date"
+                  }
+               };
             }
          }
 
@@ -344,7 +351,8 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end: 1
+                           game_end: 1,
+                           won: 0
                         }
                      });
 
@@ -353,7 +361,9 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end: 1
+                           game_end: 1,
+                           won: 1
+
                         }
                      });
 
@@ -435,7 +445,8 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end: 1
+                           game_end: 1,
+                           won: 0
                         }
                      });
 
@@ -444,7 +455,8 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end: 1
+                           game_end: 1,
+                           won: 1
                         }
                      });
 
@@ -571,7 +583,7 @@ io.on('connection', (socket) => {
       if (ready.length == 2) {
          var bothReady = true;
       }
-   
+
       if (bothReady) {
          var game = users[socket.id].jogo; // aqui obtens a informação do jogo
 
