@@ -321,7 +321,7 @@ io.on('connection', (socket) => {
                });
 
                console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
-               var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y];
+               var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y, shot[1]];
                io.to('game' + game.id).emit('celulaAlterou', dados);
 
                // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('celulaAlterou', dados);
@@ -397,8 +397,8 @@ io.on('connection', (socket) => {
                });
 
 
-                              console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
-                              var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y];
+               console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
+               var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y, shot[1]];
                               io.to('game' + game.id).emit('celulaAlterou', dados);
 
                // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
@@ -433,6 +433,7 @@ io.on('connection', (socket) => {
 
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
+
 
          // collections.collection('games').remove({});
 
