@@ -7,6 +7,7 @@ var Vue = require('vue');
 
 var app = express();
 app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
 
 var mongoUtils = require('./mongoUtils');
 var User = require('./model/User');
@@ -121,7 +122,29 @@ app.get('/game', (req, res) => {
 
 app.get('/mygames', (req, res) => {
 
-   res.sendFile(__dirname + "/views" + '/mygames.html');
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+         console.log(result);
+         res.render('mygames.html', {
+            name: name,
+            id: id,
+            games: result
+          });
+   });
+
+
+
+   // res.render('mygames.html');
+
+   // res.sendFile(__dirname + "/views" + '/mygames.html');
 
 })
 
@@ -164,26 +187,33 @@ io.on('connection', (socket) => {
          var dados = {};
          collections = mongoUtils.getDriver();
          var opponent_id = 0;
+         var opponent_name = "";
 
          for (let i = 0; i < players.length; i++) {
             if (i == 0) {
-               opponent_id = user_id[i + 1]
+               opponent_id = user_id[i + 1];
+               opponent_name = user_name[i + 1];
                dados = {
                   "id": user_id[i],
-                  "opponent_id": opponent_id,
                   "name": user_name[i],
+                  "opponent_id": opponent_id,
+                  "opponent_name" : opponent_name,
                   "matrix": matrix,
-                  "game_id": game.id
+                  "game_id": game.id,
+                  "game_end" : 0
                }
             }
             if (i == 1) {
-               opponent_id = user_id[i - 1]
+               opponent_id = user_id[i - 1];
+               opponent_name = user_name[i - 1];
                dados = {
                   "id": user_id[i],
-                  "opponent_id": opponent_id,
                   "name": user_name[i],
+                  "opponent_id": opponent_id,
+                  "opponent_name" : opponent_name,
                   "matrix": matrix,
-                  "game_id": game.id
+                  "game_id": game.id,
+                  "game_end" : 0
                }
             }
             collections.collection('games').insertOne(dados);
@@ -295,21 +325,40 @@ io.on('connection', (socket) => {
                console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
 
                if (matriz_adv[shot[0].x][shot[0].y] == 1) {
-                  counter0++;  //adiciona a contador 
-                  
+                  counter0++; //adiciona a contador 
+
                   // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
                   matriz_adv[shot[0].x][shot[0].y] = 2;
 
                   //verifica se ja chegou ao numero maximo dos barcos = 14
-                     if(counter0 == 14){
-                        
-                        io.to(socket.id).emit('gameWinner');
-                        socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
-                     }
+                  if (counter0 == 14) {
 
-                  
+                     io.to(socket.id).emit('gameWinner');
+                     socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+
+                     collections.collection('games').updateOne({
+                        id: shot[1],
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end : 1
+                        }
+                     });
+
+                     collections.collection('games').updateOne({
+                        id: result[0].opponent_id,
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end : 1
+                        }
+                     });
+   
+                  }
+
+
                   game.turno = 0;
-                  
+
                } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
                   matriz_adv[shot[0].x][shot[0].y] = 3;
                   game.turno = 1; // Se falhou, muda o turno, caso contrário continua a disparar
@@ -344,7 +393,7 @@ io.on('connection', (socket) => {
                }
             }
          });
-         console.log("contador 0 " +counter0);
+         console.log("contador 0 " + counter0);
 
       } else if (game.turno == 1) {
          console.log(game.turno + " tiro efetuado no " + shot[0].x + ' , ' + shot[0].y);
@@ -370,17 +419,36 @@ io.on('connection', (socket) => {
                console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
 
                if (matriz_adv[shot[0].x][shot[0].y] == 1) {
-                  counter1++//adiciona a contador
+                  counter1++ //adiciona a contador
 
                   matriz_adv[shot[0].x][shot[0].y] = 2;
 
-                  if(counter1 == 14){
+                  if (counter1 == 14) {
                      io.to(socket.id).emit('gameWinner');
                      socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+
+                     collections.collection('games').updateOne({
+                        id: shot[1],
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end : 1
+                        }
+                     });
+
+                     collections.collection('games').updateOne({
+                        id: result[0].opponent_id,
+                        game_id: parseInt(shot[2])
+                     }, {
+                        $set: {
+                           game_end: 1
+                        }
+                     });
+
                   }
 
                   // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
-                  
+
                   game.turno = 1;
                   //adiciona a contador
                } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
@@ -400,7 +468,7 @@ io.on('connection', (socket) => {
 
                console.log("CELULAAAA ALTEROUUUU" + matriz_adv[shot[0].x][shot[0].y] + "," + shot[0].x + "," + shot[0].y);
                var dados = [matriz_adv[shot[0].x][shot[0].y], shot[0].x, shot[0].y, shot[1]];
-                              io.to('game' + game.id).emit('celulaAlterou', dados);
+               io.to('game' + game.id).emit('celulaAlterou', dados);
 
                // socket.broadcast.to('game' + users[socket.id].jogo.id).emit('hitBoat', local);
                // console.log("CLAUUU" + shot[1] + " " + game.turno + " " + users[socket.id].numero);
@@ -410,7 +478,7 @@ io.on('connection', (socket) => {
                   io.to(socket.id).emit('cant_Fire');
                   socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
                }
-               
+
             }
          })
          console.log("Contador 1 " + counter1);
