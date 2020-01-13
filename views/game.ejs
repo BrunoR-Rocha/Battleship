@@ -61,7 +61,7 @@
             <input type="hidden" name="id" id="ref" value="<%= id %>">
             <button type="submit">Leave</button>
         </form>
-        
+
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
                 <h3>You - <%= name %></h3>
@@ -292,6 +292,7 @@
                 player[y][x] = val;
 
             }
+            drawSquares(0);
         }
 
 
@@ -453,7 +454,6 @@
                 game_id = $("#game_id").val();
                 shot.push(local, opponent_id, game_id);
                 socket.emit('tiro', shot);
-
             }
 
         });
