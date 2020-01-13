@@ -50,11 +50,17 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-   res.sendFile(__dirname + "/views" + '/register.html');
+   res.render('register.html',{
+      message: '',
+      messageClass: ''
+   });
 });
 
 app.get('/login', (req, res) => {
-   res.sendFile(__dirname + "/views" + '/login.html');
+   res.render('login.html',{
+      message: '',
+      messageClass: ''
+   });
 });
 
 
@@ -614,7 +620,10 @@ app.post('/register', function (req, res) {
 
    if (!name || !email || !password) {
       console.log("Incomplete Information");
-      res.redirect('/register');
+      res.render('register.html',{
+            message: 'Incomplete Information',
+            messageClass: 'alert-danger'
+      });
    } else if (password == password2) {
 
       bcrypt.hash(password, 8, (err, hashedPassword) => {
@@ -636,11 +645,14 @@ app.post('/register', function (req, res) {
                }
 
                collections.collection('users').insertOne(dados);
-
+               
                res.redirect('/login');
             } else {
                console.log("Utilizador já  registado");
-               res.redirect('/register');
+               res.render('register.html',{
+                  message: 'User already Registered',
+                  messageClass: 'alert-danger'
+            });
             }
          })
       });
@@ -672,7 +684,10 @@ app.post('/main', function (req, res) {
          throw err;
 
       if (!result[0]) {
-         res.redirect('/login');
+         res.render('login.html',{
+            message: 'No Users were found with this email, try again!',
+            messageClass: 'alert-danger'
+         });
       } else {
          // console.log(result[0].password);
          bcrypt.compare(password, result[0].password, (err, isMatch) => {
@@ -685,7 +700,10 @@ app.post('/main', function (req, res) {
                });
             } else {
                console.log("Invalid Password");
-               res.redirect('/login'); // mostrar mensagem de erro - password incorreta
+               res.render('login.html',{
+                  message: 'Not Successful!!! The Password was invalid, please try again',
+                  messageClass: 'alert-danger'
+               }); // mostrar mensagem de erro - password incorreta
             }
          });
       }

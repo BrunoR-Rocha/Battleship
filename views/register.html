@@ -20,6 +20,12 @@
           margin:auto;
           width: 80%;
       }
+      #alert{
+         width: 60%;
+         padding: 10px;
+         font-size: 15px;
+         margin: auto;
+      }
 
   </style>
 
@@ -30,6 +36,10 @@
          </span> 
       </div>
    </div>
+
+      <div id="alert" class="alert <%= messageClass %>" role="alert">
+         <%= message %>
+     </div>
 
    <div class="container">
       <div class="row">
