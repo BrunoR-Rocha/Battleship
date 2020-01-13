@@ -555,7 +555,8 @@ io.on('connection', (socket) => {
 
       users[socket.id].jogo = null; // deixa de ter um jogo associado
       users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
-
+      ready = [];
+      bothReady = false;
       //redireciona para a pagina main; 
       //efetuado simultaneamente atraves de um pedido POST
    });
@@ -567,7 +568,7 @@ io.on('connection', (socket) => {
       if (ready.length == 2) {
          var bothReady = true;
       }
-
+   
       if (bothReady) {
          var game = users[socket.id].jogo; // aqui obtens a informação do jogo
 
