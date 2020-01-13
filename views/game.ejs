@@ -259,9 +259,17 @@
             var x = dados[1];
             var y = dados[2];
             var val = dados[0];
-            console.log("COORDS" + val + " - "+ x + " " + y);
-            opponent[y][x] = val;
-            console.log("ALTEROU" + opponent[x][y]);
+            var op_id = dados[3];
+            if (op_id != $("#ref").val()) {
+
+                console.log("COORDS" + val + " - " + x + " " + y);
+                opponent[y][x] = val;
+                console.log("ALTEROU" + opponent[x][y]);
+            } else {
+
+                player[y][x] = val;
+
+            }
         }
 
 
@@ -497,7 +505,13 @@
                     }
 
 
-            
+
+                    if (player[i][j] == 2 && gridIndex == 0) {
+                        context[gridIndex].fillStyle = 'orange';
+                    } else if (player[i][j] == 3 && gridIndex == 0) {
+                        context[gridIndex].fillStyle = 'cyan';
+                    }
+
                     if (opponent[i][j] == 2) {
                         if (gridIndex == 1) {
                             context[gridIndex].fillStyle = 'orange';
