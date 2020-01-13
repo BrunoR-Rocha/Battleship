@@ -20,6 +20,19 @@ var BattleShip = require('./app/Game');
 
 const PORT = 3000;
 
+import TimeAgo from 'javascript-time-ago';
+
+// Load locale-specific relative date/time formatting rules.
+import en from 'javascript-time-ago/locale/en'
+
+// Add locale-specific relative date/time formatting rules.
+TimeAgo.addLocale(en);
+
+// Create relative date/time formatter.
+const timeAgo = new TimeAgo('en-US');
+
+
+
 server.listen(PORT, function () {
    console.log('Server is running');
 });
@@ -119,7 +132,8 @@ app.get('/game', (req, res) => {
 
 
 //var MyGames = require('./views/mygames.vue');
-
+var lastUpdates = "";
+var lastUpdate = [];
 app.get('/mygames', (req, res) => {
 
    var name = req.query.user_name;
@@ -132,12 +146,19 @@ app.get('/mygames', (req, res) => {
    }).toArray(function (err, result) {
       if (err)
          throw err;
-      console.log(result);
+
+      for (let i = 0; i < result.length; i++) {
+         lastUpdates = timeAgo.format(result[i].lastModified);
+         lastUpdate.push(lastUpdates);
+      }
+
       res.render('mygames.html', {
          name: name,
          id: id,
-         games: result
+         games: result,
+         lastUpdate : lastUpdate
       });
+
    });
 
 
@@ -218,14 +239,9 @@ io.on('connection', (socket) => {
                      "game_id": game.id,
                      "game_end": 0,
                      "won": 0,
-
                   }
                }
-               collections.collection('games').insertOne(dados), {
-                  $currentDate: {
-                     $type: "date"
-                  }
-               };
+               collections.collection('games').insertOne(dados);
             }
          }
 
@@ -353,6 +369,9 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 0
+                        },
+                        $currentDate: {
+                           lastModified: true,
                         }
                      });
 
@@ -363,7 +382,9 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 1
-
+                        },
+                        $currentDate: {
+                           lastModified: true,
                         }
                      });
 
@@ -383,6 +404,9 @@ io.on('connection', (socket) => {
                }, {
                   $set: {
                      matrix: matriz_adv
+                  },
+                  $currentDate: {
+                     lastModified: true,
                   }
                });
 
@@ -447,6 +471,9 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 0
+                        },
+                        $currentDate: {
+                           lastModified: true,
                         }
                      });
 
@@ -457,6 +484,9 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 1
+                        },
+                        $currentDate: {
+                           lastModified: true,
                         }
                      });
 
@@ -477,6 +507,9 @@ io.on('connection', (socket) => {
                }, {
                   $set: {
                      matrix: matriz_adv
+                  },
+                  $currentDate: {
+                     lastModified: true,
                   }
                });
 
@@ -548,6 +581,9 @@ io.on('connection', (socket) => {
             }, {
                $set: {
                   matrix: matriz_sec
+               },
+               $currentDate: {
+                  lastModified: true,
                }
             });
             cells = [];
@@ -646,7 +682,11 @@ app.post('/register', function (req, res) {
                   "password": hashedPassword,
                }
 
-               collections.collection('users').insertOne(dados);
+               collections.collection('users').insertOne({ dados }, {
+                  $currentDate: {
+                     lastModified: true,
+                  }
+               });
 
                res.redirect('/login');
             } else {
