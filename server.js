@@ -60,7 +60,8 @@ app.get('/login', (req, res) => {
 var user_id = [];
 var user_name = [];
 var userId = 0;
-
+var counter0 = 0;
+var counter1 = 0;
 
 app.get('/game', (req, res) => {
    var name = req.query.user_name;
@@ -273,19 +274,10 @@ io.on('connection', (socket) => {
 
          console.log(game.turno + " tiro efetuado no " + shot[0].x + ' , ' + shot[0].y);
 
-         // aqui é possivel obter a matriz do oponente? conseguimos obter o id do jogo e supostamente o id dos players
-         //
-         //console.log(users[socket.id].jogo)
-
-         // arranjar alguma maneira de obter o id do oponente
-         //
-
-         //var id_opponent = ...
          console.log(shot[1] + "id do oponente");
          console.log(shot[2]);
 
          var matriz_adv = [];
-
 
          var hit = collections.collection('games').find({
             id: shot[1],
@@ -303,9 +295,21 @@ io.on('connection', (socket) => {
                console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
 
                if (matriz_adv[shot[0].x][shot[0].y] == 1) {
+                  counter0++;  //adiciona a contador 
+                  
                   // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
                   matriz_adv[shot[0].x][shot[0].y] = 2;
+
+                  //verifica se ja chegou ao numero maximo dos barcos = 14
+                     if(counter0 == 14){
+                        
+                        io.to(socket.id).emit('gameWinner');
+                        socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+                     }
+
+                  
                   game.turno = 0;
+                  
                } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
                   matriz_adv[shot[0].x][shot[0].y] = 3;
                   game.turno = 1; // Se falhou, muda o turno, caso contrário continua a disparar
@@ -338,30 +342,17 @@ io.on('connection', (socket) => {
                   io.to(socket.id).emit('cant_Fire');
                   socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
                }
-
             }
-         })
-         /*   })
-          */
-
-         // console.log(game.turno);
+         });
+         console.log("contador 0 " +counter0);
 
       } else if (game.turno == 1) {
          console.log(game.turno + " tiro efetuado no " + shot[0].x + ' , ' + shot[0].y);
 
-         // aqui é possivel obter a matriz do oponente? conseguimos obter o id do jogo e supostamente o id dos players
-         //
-         //console.log(users[socket.id].jogo)
-
-         // arranjar alguma maneira de obter o id do oponente
-         //
-
-         //var id_opponent = ...
          console.log(shot[1] + "id do oponente");
          console.log(shot[2]);
 
          var matriz_adv = [];
-
 
          var hit = collections.collection('games').find({
             id: shot[1],
@@ -379,9 +370,19 @@ io.on('connection', (socket) => {
                console.log("TURNO" + game.turno + "VALOR" + matriz_adv[shot[0].x][shot[0].y]);
 
                if (matriz_adv[shot[0].x][shot[0].y] == 1) {
-                  // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
+                  counter1++//adiciona a contador
+
                   matriz_adv[shot[0].x][shot[0].y] = 2;
+
+                  if(counter1 == 14){
+                     io.to(socket.id).emit('gameWinner');
+                     socket.broadcast.to('game' + users[socket.id].jogo.id).emit('gameLoser');
+                  }
+
+                  // se na matriz.. no local indicado.. se tiver um barco... 1 ... muda para 2 .. atingido
+                  
                   game.turno = 1;
+                  //adiciona a contador
                } else if (matriz_adv[shot[0].x][shot[0].y] == 0) {
                   matriz_adv[shot[0].x][shot[0].y] = 3;
                   game.turno = 0; // Se falhou, muda o turno, caso contrário continua a disparar
@@ -409,9 +410,10 @@ io.on('connection', (socket) => {
                   io.to(socket.id).emit('cant_Fire');
                   socket.broadcast.to('game' + users[socket.id].jogo.id).emit('canFire');
                }
-
+               
             }
          })
+         console.log("Contador 1 " + counter1);
       }
    });
 

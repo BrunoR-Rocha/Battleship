@@ -53,6 +53,9 @@
         <h4 id="ready"><%= name %> is ready</h4>
         <h4 id="turn">Its your turn now</h4>
         <h4 id="wait_turn">Wait for your turn</h4>
+        <h4 id="winner">Congratulations!! You've Won</h4>
+        <h4 id="looser">Better Luck next time</h4>
+
         <a href="#" class="leave_jogo">Leave</a>
         <div class="rows">
             <div class="col-md-6 player-grid text-center">
@@ -149,6 +152,9 @@
 
             socket.on('celulaAlterou', alterarCelula);
 
+            socket.on('gameWinner', handleWinner);
+
+            socket.on('gameLoser', handleLooser);
         });
 
 
@@ -195,6 +201,8 @@
             $('#turn').hide();
             $('.leave_jogo').hide();
             $('#wait_turn').hide();
+            $('#winner').hide();
+            $('#looser').hide();
             console.log('Connected to server.');
             $('#waiting').show();
             socket.emit('join', $("#ref").val());
@@ -250,6 +258,20 @@
 
         function handleWarning(msg) {
             $(".chat").append("<li style='background-color:grey'>" + msg.message + "</li>");
+        }
+
+        function handleLooser(){
+            $('#looser').show();
+            $('#turn').hide();
+            $('#wait_turn').hide();
+            $("#canvas-grid2").css("pointer-events", "none");
+        }
+
+        function handleWinner(){
+            $('#winner').show();
+            $('#turn').hide();
+            $('#wait_turn').hide();
+            $("#canvas-grid2").css("pointer-events", "none");
         }
 
 
