@@ -132,12 +132,12 @@ app.get('/mygames', (req, res) => {
    }).toArray(function (err, result) {
       if (err)
          throw err;
-         console.log(result);
-         res.render('mygames.html', {
-            name: name,
-            id: id,
-            games: result
-          });
+      console.log(result);
+      res.render('mygames.html', {
+         name: name,
+         id: id,
+         games: result
+      });
    });
 
 
@@ -190,33 +190,36 @@ io.on('connection', (socket) => {
          var opponent_name = "";
 
          for (let i = 0; i < players.length; i++) {
-            if (i == 0) {
-               opponent_id = user_id[i + 1];
-               opponent_name = user_name[i + 1];
-               dados = {
-                  "id": user_id[i],
-                  "name": user_name[i],
-                  "opponent_id": opponent_id,
-                  "opponent_name" : opponent_name,
-                  "matrix": matrix,
-                  "game_id": game.id,
-                  "game_end" : 0
+            if (user_id[i] != null && opponent_id !=null) {
+
+               if (i == 0) {
+                  opponent_id = user_id[i + 1];
+                  opponent_name = user_name[i + 1];
+                  dados = {
+                     "id": user_id[i],
+                     "name": user_name[i],
+                     "opponent_id": opponent_id,
+                     "opponent_name": opponent_name,
+                     "matrix": matrix,
+                     "game_id": game.id,
+                     "game_end": 0
+                  }
                }
-            }
-            if (i == 1) {
-               opponent_id = user_id[i - 1];
-               opponent_name = user_name[i - 1];
-               dados = {
-                  "id": user_id[i],
-                  "name": user_name[i],
-                  "opponent_id": opponent_id,
-                  "opponent_name" : opponent_name,
-                  "matrix": matrix,
-                  "game_id": game.id,
-                  "game_end" : 0
+               if (i == 1) {
+                  opponent_id = user_id[i - 1];
+                  opponent_name = user_name[i - 1];
+                  dados = {
+                     "id": user_id[i],
+                     "name": user_name[i],
+                     "opponent_id": opponent_id,
+                     "opponent_name": opponent_name,
+                     "matrix": matrix,
+                     "game_id": game.id,
+                     "game_end": 0
+                  }
                }
+               collections.collection('games').insertOne(dados);
             }
-            collections.collection('games').insertOne(dados);
          }
 
 
@@ -341,7 +344,7 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end : 1
+                           game_end: 1
                         }
                      });
 
@@ -350,10 +353,10 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end : 1
+                           game_end: 1
                         }
                      });
-   
+
                   }
 
 
@@ -432,7 +435,7 @@ io.on('connection', (socket) => {
                         game_id: parseInt(shot[2])
                      }, {
                         $set: {
-                           game_end : 1
+                           game_end: 1
                         }
                      });
 
@@ -649,7 +652,7 @@ app.post('/register', function (req, res) {
 //rota que trata do pedido para ir para a pagina principal quando sai de um jogo
 //os valores sao passados pela submissao de um formulario com valores hidden na pagina de jogo
 app.post('/mainMenu', (req, res) => {
-      res.render('main', {
+   res.render('main', {
       name: req.body.name,
       id: req.body.id,
    })
