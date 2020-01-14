@@ -90,10 +90,23 @@ app.get('/profile', (req, res) => {
    }).toArray(function (err, result) {
       if (err)
          throw err;
-      console.log(result);
+      //console.log(result);
+      var victory = 0;
+      var losses = 0;
+      result.forEach(element => {
+         if(element.won == 1){
+            victory++;
+         }
+         else{
+            losses++;
+         }
+      });
+
       res.render('profile', {
          name: name,
          id: id,
+         victory: victory,
+         losses: losses,
          games: result
       });
    });
