@@ -56,19 +56,60 @@
       </span>
     </div>
   </div>
-  
   <div class="container">
     <div class="profile">
       <span v-bind:style="estilo_subtitulo">
         {{subtitulo}}
       </span>
-
-      <span v-bind:style="estilo_pontuacao">
-        {{pontuacao}}
-      </span>
-
     </div>
   </div>
+  <div class="container">
+    <div class="col-md-8">
+      <div class="row">
+              <div class="col-md-6">
+                  <label>User Id</label>
+              </div>
+              <div class="col-md-6">
+                  <p><%= id %></p>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <label>Name</label>
+              </div>
+              <div class="col-md-6">
+                  <p><%= name %></p>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <label>Email</label>
+              </div>
+              <div class="col-md-6">
+                  <p></p>
+              </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+                <label>Victories</label>
+            </div>
+            <div class="col-md-6">
+                <p><%= victory %></p>
+            </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <label>Losses</label>
+              </div>
+              <div class="col-md-6">
+                  <p><%= losses %></p>
+              </div>
+          </div>
+</div>
+  </div>
+      
+  
 
 
 
