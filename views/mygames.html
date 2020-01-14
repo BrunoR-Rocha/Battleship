@@ -7,7 +7,8 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Battleship Game</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 </head>
 
@@ -27,9 +28,23 @@
 
   <div class="nav" v-bind:style="estilo_nav">
 
-    <a href="/mainMenu"><span v-bind:style="estilo_link">{{home}}</span></a>
-    <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
-    <a href="/profile"><span v-bind:style="estilo_link">{{perfil}}</span></a>
+    <form name="input" action="/mainMenu" method="post">
+      <input type="hidden" id="user_id" name="id" value="<%= id %>">
+      <input type="hidden" id="name" name="name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{home}}</button></span>
+    </form>
+
+    <form name="input" action="/mygames" method="get">
+      <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+      <input type="hidden" id="name" name="user_name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{jogos}}</button></span>
+    </form>
+
+    <form name="input" action="/profile" method="get">
+      <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+      <input type="hidden" id="name" name="user_name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{perfil}}</button></span>
+    </form>
     <a href="/logout"><span v-bind:style="estilo_link">{{logout}}</span></a>
 
   </div>
@@ -60,10 +75,13 @@
         <div class="card-body">
           <h5 class="card-title"><% games[i].opponent_name %></h5>
           <p class="card-text">You are currently playing with <%- games[i].opponent_name %></p>
-          <a href="#" class="btn btn-warning">Keep playing</a>
+          <!-- user_id=5e16277158c64f2090088a52&user_name=Alberto&gameID=2 -->
+          <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].user_name %>&gameID=<%- games[i].game_id %>"
+            class="btn btn-warning">Keep
+            playing</a>
         </div>
         <div class="card-footer text-muted">
-          2 days ago
+          <%- lastUpdate[i] %>
         </div>
       </div>
       <br>
@@ -79,7 +97,7 @@
           <a href="#" class="btn btn-success">See game</a>
         </div>
         <div class="card-footer text-muted">
-          2 days ago
+          <%- lastUpdate[i] %>
         </div>
       </div>
       <br>
@@ -95,7 +113,7 @@
           <a href="#" class="btn btn-danger">See game</a>
         </div>
         <div class="card-footer text-muted">
-          2 days ago
+          <%- lastUpdate[i] %>
         </div>
       </div>
       <br>
@@ -125,6 +143,10 @@
           marginRight: '5%',
           marginLeft: '5%',
           border: '2px solid navy',
+        },
+        estilo_btn: {
+          backgroundColor: 'darkblue',
+          border: 'none'
         }
       }
     });
