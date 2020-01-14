@@ -30,6 +30,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="title">
         <h1>Battleship Game</h1>
@@ -151,11 +152,15 @@
 
             socket.on('celulaAlterou', alterarCelula);
 
+            socket.on('carregar', alterarTodas);
+
+
             socket.on('gameWinner', handleWinner);
 
             socket.on('gameLoser', handleLooser);
 
             socket.on('alert', handleAlert);
+
 
         });
 
@@ -195,7 +200,7 @@
             socket.emit('leave');
         });
 
-        function handleAlert(msg){
+        function handleAlert(msg) {
             alert(msg);
         }
 
@@ -228,6 +233,12 @@
             $('#not-ready').show();
             $('#ready').hide();
             //socket.emit('',$("#ref").val());
+
+
+          
+
+
+
         }
 
         function ready() {
@@ -282,6 +293,32 @@
             alert("You've Won, congratulations!!! Now you can leave the game!");
         }
 
+
+
+
+        function alterarTodas(dados) {
+
+            var matrix = dados[0];
+            var user = dados[1];
+
+            console.log("OMGGG");
+            for (var x = 0; x < 10; x++) {
+                for (var y = 0; y < 10; y++) {
+                    console.log("USER" + user + " - " + $("#ref").val());
+                    // console.log("X" + x + " Y" + y + " - " + matrix[x][y]);
+                    if (user != $("#ref").val()) {
+                        console.log("ELE");
+                        opponent[x][y] = matrix[x][y];
+                    } else {
+                        console.log("EU");
+                        player[x][y] = matrix[x][y];
+                    }
+                }
+            }
+
+            drawSquares(0);
+            drawSquares(1);
+        }
 
 
 

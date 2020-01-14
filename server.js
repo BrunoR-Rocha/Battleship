@@ -64,20 +64,20 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-   res.render('register.html',{
+   res.render('register.html', {
       message: '',
       messageClass: ''
    });
 });
 
 app.get('/login', (req, res) => {
-   res.render('login.html',{
+   res.render('login.html', {
       message: '',
       messageClass: ''
    });
 });
 
-app.get('/profile',(req, res) =>{
+app.get('/profile', (req, res) => {
 
    var name = req.query.user_name;
    var id = req.query.user_id;
@@ -91,7 +91,7 @@ app.get('/profile',(req, res) =>{
       if (err)
          throw err;
       console.log(result);
-     res.render('profile', {
+      res.render('profile', {
          name: name,
          id: id,
          games: result
@@ -100,8 +100,8 @@ app.get('/profile',(req, res) =>{
 });
 
 
-app.get('/logout', (req, res) =>{
-   res.render('login.html',{
+app.get('/logout', (req, res) => {
+   res.render('login.html', {
       message: 'You have left the Battleship Game successfully',
       messageClass: 'alert-success'
    });
@@ -119,8 +119,6 @@ app.get('/game', (req, res) => {
 
    user_id.push(id);
    user_name.push(name);
-
-
 
    var ships = [{
          'type': 'Aircraft carrier',
@@ -156,15 +154,12 @@ app.get('/game', (req, res) => {
       }
    ];
 
-
-
    res.render('game', {
       name: name,
       id: id,
       ships: ships,
    });
 })
-
 
 //var MyGames = require('./views/mygames.vue');
 var lastUpdates = "";
@@ -178,6 +173,8 @@ app.get('/mygames', (req, res) => {
 
    var games = collections.collection('games').find({
       id: id,
+   }).sort({
+      lastModified: -1
    }).toArray(function (err, result) {
       if (err)
          throw err;
@@ -191,8 +188,10 @@ app.get('/mygames', (req, res) => {
          name: name,
          id: id,
          games: result,
-         lastUpdate : lastUpdate
+         lastUpdate: lastUpdate
       });
+
+      lastUpdate = [];
 
    });
 
@@ -258,6 +257,7 @@ io.on('connection', (socket) => {
 
          var game = new BattleShip(gameCount++, players[0].id, players[1].id);
 
+
          var matrix = [];
          for (var i = 0; i < 10; i++) {
             matrix[i] = [];
@@ -311,9 +311,6 @@ io.on('connection', (socket) => {
          // var dados = [game.id, ];
          // io.to('game' + game.id).emit('getOponent', dados);
 
-         user_id = [];
-         user_name = [];
-
 
          //console.log(game.players);
 
@@ -331,6 +328,69 @@ io.on('connection', (socket) => {
 
 
          io.to('game' + game.id).emit('start', game.id);
+
+
+         // Buscar todos os dados
+         var buscarDados = false;
+
+
+         if (buscarDados) {
+
+            var usersList = [user_id[0], user_id[1]];
+
+            collections = mongoUtils.getDriver();
+
+
+            var hit = collections.collection('games').find({
+               id: usersList[0],
+               game_id: 1
+            }).toArray(function (err, result) {
+               if (err)
+                  throw err;
+
+               if (result[0]) {
+
+                  console.log("SERVER" + result[0].matrix);
+
+
+                  var dados = [result[0].matrix, usersList[0]];
+                  io.to('game' + game.id).emit('carregar', dados);
+                  // socket.emit("setOpponent", result[0].matrix);
+                  // console.log("CLAUDIO" + result[0].opponent_id);
+                  // io.emit('setOpponent', result[0].opponent_id);
+
+               }
+            });
+
+
+
+            var hit2 = collections.collection('games').find({
+               id: usersList[1],
+               game_id: 1
+            }).toArray(function (err, result) {
+               if (err)
+                  throw err;
+
+               if (result[0]) {
+
+                  console.log("SERVER" + result[0].matrix);
+
+
+                  var dados = [result[0].matrix, usersList[1]];
+                  io.to('game' + game.id).emit('carregar', dados);
+                  // socket.emit("setOpponent", result[0].matrix);
+                  // console.log("CLAUDIO" + result[0].opponent_id);
+                  // io.emit('setOpponent', result[0].opponent_id);
+
+               }
+            });
+
+         }
+
+
+         user_id = [];
+         user_name = [];
+
          console.log(io.sockets.adapter.rooms['game' + game.id]);
       }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
@@ -353,6 +413,7 @@ io.on('connection', (socket) => {
          });
       }
    });
+
 
 
 
@@ -614,8 +675,7 @@ io.on('connection', (socket) => {
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
 
-
-         // collections.collection('games').remove({});
+   // collections.collection('games').remove({});
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
@@ -724,9 +784,9 @@ app.post('/register', function (req, res) {
 
    if (!name || !email || !password) {
       console.log("Incomplete Information");
-      res.render('register.html',{
-            message: 'Incomplete Information',
-            messageClass: 'alert-danger'
+      res.render('register.html', {
+         message: 'Incomplete Information',
+         messageClass: 'alert-danger'
       });
    } else if (password == password2) {
 
@@ -747,7 +807,9 @@ app.post('/register', function (req, res) {
                   "email": email,
                   "password": hashedPassword,
                }
-               collections.collection('users').insertOne({ dados }, {
+               collections.collection('users').insertOne({
+                  dados
+               }, {
                   $currentDate: {
                      lastModified: true,
                   }
@@ -756,10 +818,10 @@ app.post('/register', function (req, res) {
                res.redirect('/login');
             } else {
                console.log("Utilizador já  registado");
-               res.render('register.html',{
+               res.render('register.html', {
                   message: 'User already Registered',
                   messageClass: 'alert-danger'
-            });
+               });
             }
          })
       });
@@ -791,7 +853,7 @@ app.post('/main', function (req, res) {
          throw err;
 
       if (!result[0]) {
-         res.render('login.html',{
+         res.render('login.html', {
             message: 'No Users were found with this email, try again!',
             messageClass: 'alert-danger'
          });
@@ -807,7 +869,7 @@ app.post('/main', function (req, res) {
                });
             } else {
                console.log("Invalid Password");
-               res.render('login.html',{
+               res.render('login.html', {
                   message: 'Not Successful!!! The Password was invalid, please try again',
                   messageClass: 'alert-danger'
                }); // mostrar mensagem de erro - password incorreta
