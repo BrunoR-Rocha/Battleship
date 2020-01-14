@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Battleship Game</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+</head>
+
+<body>
+  <style>
+    .row {
+      width: 80%;
+      font-size: 30px;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+
+    .a {
+      display: block;
+      color: white;
+    }
+
+  </style>
+
+  <div class="nav" v-bind:style="estilo_nav">
+
+    <form name="input" action="/mainMenu" method="post" >
+      <input type="hidden" id="user_id" name="id" value="<%= id %>">
+      <input type="hidden" id="name" name="name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{home}}</button></span>
+   </form>
+
+   <form name="input" action="/mygames" method="get" >
+    <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+    <input type="hidden" id="name" name="user_name" value="<%= name %>">
+    <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{jogos}}</button></span>
+    </form>
+
+    <form name="input" action="/profile" method="get" >
+      <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+      <input type="hidden" id="name" name="user_name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{perfil}}</button></span>
+   </form>
+    <a href="/logout"><span v-bind:style="estilo_link">{{logout}}</span></a>
+
+  </div>
+
+  <div class="container">
+    <div class="title">
+      <span v-bind:style="estilo_titulo">
+        {{titulo}}
+      </span>
+    </div>
+  </div>
+  <div class="container">
+    <div class="profile">
+      <span v-bind:style="estilo_subtitulo">
+        {{subtitulo}}
+      </span>
+    </div>
+  </div>
+  <div class="container">
+    <div class="col-md-8">
+      <div class="row">
+              <div class="col-md-6">
+                  <label>User Id</label>
+              </div>
+              <div class="col-md-6">
+                  <p><%= id %></p>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <label>Name</label>
+              </div>
+              <div class="col-md-6">
+                  <p><%= name %></p>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <label>Email</label>
+              </div>
+              <div class="col-md-6">
+                  <p></p>
+              </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+                <label>Victories</label>
+            </div>
+            <div class="col-md-6">
+                <p><%= victory %></p>
+            </div>
+          </div>
+          <div class="row">
+              <div class="col-md-6">
+                  <label>Losses</label>
+              </div>
+              <div class="col-md-6">
+                  <p><%= losses %></p>
+              </div>
+          </div>
+</div>
+  </div>
+      
+  
+
+
+
+  <script>
+    var nav = new Vue({
+      el: '.nav',
+      data: {
+        home: 'Home',
+        jogos: 'My Games',
+        perfil: 'My Profile',
+        logout: 'Logout',
+        estilo_nav: {
+          display:'flex',
+          justifyContent: 'space-around',
+          textAlign: 'center',
+          backgroundColor: 'darkblue',
+        },
+        estilo_link: {
+          fontSize: '30px',
+          textAlign: 'center',
+          color: 'white',
+          margin: '30px auto',
+          marginRight: '5%',
+          marginLeft: '5%',
+          border: '2px solid navy',
+        },
+        estilo_btn:{
+               backgroundColor:'darkblue',
+               border: 'none'
+            }
+      }
+    });
+    var title = new Vue({
+      el: '.title',
+      data: {
+        titulo: 'BattleShip Game',
+
+        estilo_titulo: {
+          fontSize: '30px',
+          textAlign: 'center',
+          color: 'white',
+          backgroundColor: 'darkblue',
+          display: 'block',
+          margin: '30px auto',
+          border: '2px solid navy',
+          width: '90%',
+          padding: '20px'
+        }
+      },
+    });
+    var profile = new Vue({
+      el: '.profile',
+      data: {
+        subtitulo: 'My Profile',
+        pontuacao: 'HighScore',
+        estilo_subtitulo: {
+          fontSize: '30px',
+          margin: '30px auto',
+          padding: '40px'
+        }
+      }
+    })
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
+</body>
+
+</html>

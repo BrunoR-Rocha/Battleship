@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+
+
+    <title>Battleship Game</title>
+    <style>
+        body {
+            margin: 1em;
+        }
+
+        .rows {
+            display: flex;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        div {
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">
+        <h1>Battleship Game</h1>
+    </div>
+
+    <div id="waiting" style="display:none;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Waiting for Players
+            </div>
+            <div class="panel-body">
+                <p>You are connected to the server.</p>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+
+        <!-- Player grids -->
+        <h4 id="not-ready"><%= name %> is not ready</h4>
+        <h4 id="ready"><%= name %> is ready</h4>
+        <h4 id="turn">Its your turn now</h4>
+        <h4 id="wait_turn">Wait for your turn</h4>
+        <h4 id="winner">Congratulations!! You've Won</h4>
+        <h4 id="looser">Better Luck next time</h4>
+
+        <form name="input" class="leave_jogo" action="/mainMenu" method="post">
+            <input type="hidden" name="name" id="name" value="<%= name %>">
+            <input type="hidden" name="id" id="ref" value="<%= id %>">
+            <button type="submit" class="btn btn-danger">Leave</button>
+        </form>
+
+        <div class="rows">
+            <div class="col-md-6 player-grid text-center">
+                <h3>You - <%= name %></h3>
+                <input type="hidden" name="name" id="name" value="<%= name %>">
+                <input type="hidden" name="id" id="ref" value="<%= id %>">
+                <input type="hidden" name="game_id" id="game_id" value="">
+                <input type="hidden" name="opponent_id" id="opponent_id" value="">
+                <canvas id="canvas-grid1" width="361" height="361"></canvas>
+            </div>
+            <div class="col-md-6 player-grid text-center">
+                <h3>Opponent</h3>
+                <canvas id="canvas-grid2" width="361" height="361"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+
+    </script>
+
+    <div class="col-md-4">
+        <h3>Your ships</h3>
+        <button type="button" id="rotate">Horizontal</button>
+
+        <% var shipsTotal = 0 %>
+        <% for(var i=0; i < ships.length; i++) { %>
+        <p>
+
+            <button type="button" class="btn btn-default btn-primary" amount="<%= ships[i].amount %>"
+                value="<%= ships[i].size %>">Select</button>
+            <img src="<%= ships[i].image %>" alt="" height="60px">
+            <%= ships[i].type %>
+            <%= ships[i].amount %>x
+
+        </p>
+        <% } %>
+
+    </div>
+    <div class="panel-body">
+        <div class="chat"></div>
+        <form id="message-form" action="">
+            <div class="input-group">
+                <input id="chat_message" class="form-control" autocomplete="off" />
+                <div class="input-group-btn">
+                    <button class="btn btn-primary">Send Message</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        var socket;
+
+        var player = [];
+        var opponent = [];
+
+        for (var i = 0; i < 10; i++) {
+            player[i] = [];
+            opponent[i] = [];
+            for (var j = 0; j < 10; j++) {
+                player[i][j] = 0;
+                opponent[i][j] = 0;
+            }
+        }
+
+
+        $(document).ready(function () {
+            socket = new io();
+
+            socket.on('connect', handleConnection);
+
+            socket.on('start', handleGameStart);
+
+            socket.on('update', handleNewUser);
+
+            socket.on('message', handleNewMessage);
+
+            socket.on('info server', handleInfoMessage);
+
+            socket.on('canFire', handleFireRequest);
+
+            socket.on('cant_Fire', handleWaitFire);
+
+            socket.on('setOpponent', function (opponent_id) {
+                $("#opponent_id").val(opponent_id);
+            });
+
+            socket.on('avisoSaida', handleWarning);
+
+            socket.on('celulaAlterou', alterarCelula);
+
+            socket.on('carregar', alterarTodas);
+
+
+            socket.on('gameWinner', handleWinner);
+
+            socket.on('gameLoser', handleLooser);
+
+            socket.on('alert', handleAlert);
+
+
+        });
+
+
+        var val = 0;
+        var amo = 0;
+        var current_boat = "";
+        var shipOnBoard = 0;
+
+        $('.btn-default').click(function (e) {
+
+            val = parseInt($(this).attr('value'));
+            amo = parseInt($(this).attr('amount'));
+            current_boat = this;
+
+        });
+
+
+        $('#rotate').click(function () {
+
+            var $this = $(this);
+            $this.toggleClass('rotate');
+            if ($this.hasClass('rotate')) {
+                $this.text('Vertical');
+            } else {
+                $this.text('Horizontal');
+            }
+        });
+
+        $('#message-form').submit(function () {
+            socket.emit('message', $('#chat_message').val());
+            $('#chat_message').val('');
+            return false;
+        });
+
+        $('.leave_jogo').submit(function () {
+            socket.emit('leave');
+        });
+
+        function handleAlert(msg) {
+            alert(msg);
+        }
+
+        function handleConnection() {
+            $('.panel-body').hide();
+            $('.col-md-4').hide();
+            $('#not-ready').hide();
+            $('#ready').hide();
+            $('#turn').hide();
+            $('.leave_jogo').hide();
+            $('#wait_turn').hide();
+            $('#winner').hide();
+            $('#looser').hide();
+            console.log('Connected to server.');
+            $('#waiting').show();
+            socket.emit('join', $("#ref").val());
+        }
+
+        function handleGameStart(game_id) {
+            console.log('game is starting' + game_id);
+            // alert($("#ref").val());
+            var dados = [$("#ref").val(), game_id];
+            socket.emit('getOpponent', dados);
+
+            $("#game_id").val(game_id);
+            // $("#opponent_id").val(opponent_id);
+            $('#waiting').hide();
+            $('.panel-body').show();
+            $('.col-md-4').show();
+            $('#not-ready').show();
+            $('#ready').hide();
+            //socket.emit('',$("#ref").val());
+
+
+          
+
+
+
+        }
+
+        function ready() {
+            $('#not-ready').hide();
+            $('#ready').show();
+            $('.leave_jogo').show();
+        }
+
+        function handleNewUser(msg) {
+            $(".chat").append("<li style='text-decoration:underline'>" + msg + "</li>");
+        }
+
+        function handleNewMessage(msg) {
+            $(".chat").append("<li style='background-color:grey'>" + msg.name + " : " + msg.message + "</li>");
+        }
+
+        function handleInfoMessage(msg) {
+            $("#info_field").html("<p style='text-size:0.3em'>" + msg + "</p>");
+        }
+
+        function handleFireRequest() {
+            $('#ready').hide();
+            $('#turn').show();
+            $('#wait_turn').hide();
+            $("#canvas-grid2").css("pointer-events", "all");
+        }
+
+        function handleWaitFire() {
+            $('#ready').hide();
+            $('#turn').hide();
+            $('#wait_turn').show();
+            $("#canvas-grid2").css("pointer-events", "none");
+        }
+
+        function handleWarning(msg) {
+            $(".chat").append("<li style='background-color:grey'>" + msg.message + "</li>");
+        }
+
+        function handleLooser() {
+            $('#looser').show();
+            $('#turn').hide();
+            $('#wait_turn').hide();
+            $("#canvas-grid2").css("pointer-events", "none");
+            alert("LOOOOSER!! Now you can leave the game!");
+        }
+
+        function handleWinner() {
+            $('#winner').show();
+            $('#turn').hide();
+            $('#wait_turn').hide();
+            $("#canvas-grid2").css("pointer-events", "none");
+            alert("You've Won, congratulations!!! Now you can leave the game!");
+        }
+
+
+
+
+        function alterarTodas(dados) {
+
+            var matrix = dados[0];
+            var user = dados[1];
+
+            console.log("OMGGG");
+            for (var x = 0; x < 10; x++) {
+                for (var y = 0; y < 10; y++) {
+                    console.log("USER" + user + " - " + $("#ref").val());
+                    // console.log("X" + x + " Y" + y + " - " + matrix[x][y]);
+                    if (user != $("#ref").val()) {
+                        console.log("ELE");
+                        opponent[x][y] = matrix[x][y];
+                    } else {
+                        console.log("EU");
+                        player[x][y] = matrix[x][y];
+                    }
+                }
+            }
+
+            drawSquares(0);
+            drawSquares(1);
+        }
+
+
+
+        function alterarCelula(dados) {
+            var x = dados[1];
+            var y = dados[2];
+            var val = dados[0];
+            var op_id = dados[3];
+            if (op_id != $("#ref").val()) {
+
+                console.log("COORDS" + val + " - " + x + " " + y);
+                opponent[y][x] = val;
+                console.log("ALTEROU" + opponent[x][y]);
+            } else {
+
+                player[y][x] = val;
+
+            }
+            drawSquares(0);
+        }
+
+
+        var canvas = [],
+            context = [],
+            grid = [],
+            gridHeight = 361,
+            gridWidth = 361,
+            gridBorder = 1,
+            gridRows = 10,
+            gridCols = 10,
+            markPadding = 10,
+            shipPadding = 3,
+            squareHeight = (gridHeight - gridBorder * gridBorder) / gridRows,
+            squareWidth = (gridWidth - gridBorder * gridCols - gridBorder) / gridCols,
+            turn = false,
+            gameStatus, squareHover = {
+                x: -1,
+                y: -1
+            };
+
+        canvas[0] = document.getElementById('canvas-grid1'); // This player
+        canvas[1] = document.getElementById('canvas-grid2'); // Opponent
+
+
+        context[0] = canvas[0].getContext('2d');
+        context[1] = canvas[1].getContext('2d');
+
+        //desenha ambas as grelhas no ecra
+        drawSquares(0);
+        drawSquares(1);
+
+        canvas[0].addEventListener('mousemove', function (e) {
+            var pos = getCanvasCoordinates(e, canvas[0]);
+            squareHover = getSquare(pos.x, pos.y);
+            drawSquares(0);
+        });
+
+        //
+        canvas[0].addEventListener('mouseout', function (e) {
+            squareHover = {
+                x: -1,
+                y: -1
+            };
+            drawSquares(0);
+        });
+
+        canvas[0].addEventListener('click', function (e) {
+
+            var pos = getCanvasCoordinates(e, canvas[0]);
+            var local = getSquare(pos.x, pos.y);
+            console.log(local);
+            // socket.emit('tiro', local);
+
+
+
+            $(current_boat).attr('amount', parseInt($(current_boat).attr('amount')) - 1);
+            if ($(current_boat).attr('amount') == 0) {
+                $(current_boat).attr('disabled', true);
+            }
+
+
+            // Vendo se encontrou barcos pelo caminho
+            var found = false;
+            for (var i = 0; i < val; i++) {
+                if ($('#rotate').text() == "Horizontal") {
+                    if (player[local.y + i][local.x] == 1) {
+                        found = true;
+
+                    }
+                }
+                if ($('#rotate').text() == "Vertical") {
+                    if (player[local.y][local.x + i] == 1) {
+                        found = true;
+                    }
+                }
+            }
+            // Vendo se encontrou paredes no caminho 
+            var wall = false;
+            for (var i = 0; i < val; i++) {
+                if ($('#rotate').text() == "Vertical") {
+                    if (local.x + i >= 10) {
+                        wall = true;
+                        console.log(local.x + i);
+                    }
+                } else {
+                    if (local.y + i >= 10) {
+                        wall = true;
+                    }
+                }
+            }
+
+
+            if (amo > 0) {
+                // Se não encontrou barcos, "pinta"
+                if (found == false && wall == false) {
+                    var coord = [];
+                    id = $("#ref").val();
+                    game_id = parseInt($("#game_id").val());
+                    for (var i = 0; i < val; i++) {
+                        if ($('#rotate').text() == "Vertical") {
+                            player[local.y][local.x + i] = 1;
+                            coord = [local.y, local.x + i, val, id, game_id]; // y, x, tamanho do barco, user_id
+
+                            socket.emit('place', coord);
+                        } else {
+                            player[local.y + i][local.x] = 1;
+                            coord = [local.y + i, local.x, val, id, game_id];
+
+                            socket.emit('place', coord);
+                        }
+                    }
+                    amo--;
+                    shipOnBoard = shipOnBoard + val;
+
+                }
+            }
+
+            // for (var i = 0; i < 10; i++) {
+            //     for (var j = 0; j < 10; j++) {
+            //         console.log(player[i][j]);
+            //     }
+            // }
+
+            if (shipOnBoard == 14) {
+                shipOnBoard++;
+                id = $("#ref").val(); //id do user
+
+                socket.emit('pronto', id);
+                ready();
+            }
+
+
+        });
+
+        canvas[1].addEventListener('mousemove', function (e) {
+            var pos = getCanvasCoordinates(e, canvas[1]);
+            squareHover = getSquare(pos.x, pos.y);
+            drawSquares(1);
+        });
+
+        //
+        canvas[1].addEventListener('mouseout', function (e) {
+            squareHover = {
+                x: -1,
+                y: -1
+            };
+            drawSquares(1);
+        });
+
+        canvas[1].addEventListener('click', function (e) {
+            shot = [];
+            if (shipOnBoard >= 14) {
+                var pos = getCanvasCoordinates(e, canvas[1]);
+                var local = getSquare(pos.x, pos.y);
+
+                opponent[local.y][local.x] = 1;
+                opponent_id = $("#opponent_id").val();
+                game_id = $("#game_id").val();
+                shot.push(local, opponent_id, game_id);
+                socket.emit('tiro', shot);
+            }
+
+        });
+
+
+
+
+        function getCanvasCoordinates(event, canvas) {
+            rect = canvas.getBoundingClientRect();
+            return {
+                x: Math.round((event.clientX - rect.left) / (rect.right - rect.left) * canvas.width),
+                y: Math.round((event.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height)
+            };
+        };
+
+        //obtem a posiçao do quadrado que for marcado
+        function getSquare(x, y) {
+            return {
+                x: Math.floor(x / (gridWidth / gridCols)),
+                y: Math.floor(y / (gridHeight / gridRows))
+            };
+        };
+
+        function drawGrid(gridIndex) {
+            drawSquares(gridIndex);
+        };
+
+
+
+
+        //funçao externa - para efeitos de teste
+
+        function drawSquares(gridIndex) {
+            var i, j, squareX, squareY;
+
+            context[gridIndex].fillStyle = '#222222'
+            context[gridIndex].fillRect(0, 0, gridWidth, gridHeight);
+
+            for (i = 0; i < gridRows; i++) {
+                for (j = 0; j < gridCols; j++) {
+                    squareX = j * (squareWidth + gridBorder) + gridBorder;
+                    squareY = i * (squareHeight + gridBorder) + gridBorder;
+
+                    context[gridIndex].fillStyle = '#7799FF'
+
+                    if (gridIndex == 1 && shipOnBoard >= 14) {
+                        if (j === squareHover.x && i === squareHover.y) {
+
+                            context[gridIndex].fillStyle = '#4477FF';
+                        }
+                    }
+                    if (player[i][j] != 1) {
+
+                        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+                        // Para grid do utilizador atual
+                        if (gridIndex == 0) {
+                            // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na vertical
+                            if ($('#rotate').text() == "Vertical" && j >= squareHover.x && j < squareHover.x + val &&
+                                i === squareHover.y && shipOnBoard < 14) {
+                                context[gridIndex].fillStyle = '#4477FF';
+
+                                // Botão estar Vertical, "pinta" quadrados de acordo com o tamanho do barco na horizontal
+                            } else if ($('#rotate').text() == "Horizontal" && i >= squareHover.y && i < squareHover.y +
+                                val && j === squareHover.x && shipOnBoard < 14) {
+                                context[gridIndex].fillStyle = '#4477FF';
+                            }
+                        }
+                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
+                    } else if (gridIndex == 0) {
+                        context[gridIndex].fillStyle = '#4477FF';
+                    }
+
+
+
+                    if (player[i][j] == 2 && gridIndex == 0) {
+                        context[gridIndex].fillStyle = 'orange';
+                    } else if (player[i][j] == 3 && gridIndex == 0) {
+                        context[gridIndex].fillStyle = 'cyan';
+                    }
+
+                    if (opponent[i][j] == 2) {
+                        if (gridIndex == 1) {
+                            context[gridIndex].fillStyle = 'orange';
+                        }
+                    } else if (opponent[i][j] == 3) {
+                        if (gridIndex == 1) {
+                            context[gridIndex].fillStyle = 'cyan';
+                        }
+                    } else if (opponent[i][j] != 1) {
+
+                        // muda de cor na passagem do rato se estes ainda nao tiverem sido marcados
+                        // Para grid do utilizador atual
+                        if (gridIndex == 1) {
+                            if (j === squareHover.x && i === squareHover.y) {
+                                context[gridIndex].fillStyle = '#4477FF';
+                            }
+                        }
+                        // Grid do adversário "pinta" apenas o quadrado que é passdo por cima e já estão todos os barcos na board
+                    } else if (gridIndex == 1) {
+                        context[gridIndex].fillStyle = 'red';
+
+                    }
+
+                    context[gridIndex].fillRect(squareX, squareY, squareWidth, squareHeight);
+                }
+            }
+        };
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+
+</body>
+
+</html>
