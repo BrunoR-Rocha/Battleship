@@ -21,19 +21,6 @@ var BattleShip = require('./app/Game');
 
 const PORT = 3000;
 
-import TimeAgo from 'javascript-time-ago';
-
-// Load locale-specific relative date/time formatting rules.
-import en from 'javascript-time-ago/locale/en'
-
-// Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(en);
-
-// Create relative date/time formatter.
-const timeAgo = new TimeAgo('en-US');
-
-
-
 server.listen(PORT, function () {
    console.log('Server is running');
 });
@@ -64,24 +51,24 @@ app.get('/', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-   res.render('register.html', {
+   res.render('register.html',{
       message: '',
       messageClass: ''
    });
 });
 
 app.get('/login', (req, res) => {
-   res.render('login.html', {
+   res.render('login.html',{
       message: '',
       messageClass: ''
    });
 });
 
-app.get('/profile', (req, res) => {
+app.get('/profile',(req, res) =>{
 
    var name = req.query.user_name;
    var id = req.query.user_id;
-   // console.log(req.query);
+   console.log(name + id);
 
    collections = mongoUtils.getDriver();
 
@@ -90,30 +77,18 @@ app.get('/profile', (req, res) => {
    }).toArray(function (err, result) {
       if (err)
          throw err;
-      //console.log(result);
-      var victory = 0;
-      var losses = 0;
-      result.forEach(element => {
-         if (element.won == 1) {
-            victory++;
-         } else {
-            losses++;
-         }
-      });
-
-      res.render('profile', {
+      console.log(result);
+     res.render('profile', {
          name: name,
          id: id,
-         victory: victory,
-         losses: losses,
          games: result
       });
    });
 });
 
 
-app.get('/logout', (req, res) => {
-   res.render('login.html', {
+app.get('/logout', (req, res) =>{
+   res.render('login.html',{
       message: 'You have left the Battleship Game successfully',
       messageClass: 'alert-success'
    });
@@ -124,29 +99,15 @@ var userId = 0;
 var counter0 = 0;
 var counter1 = 0;
 
-
-var saveGameID = 0;
-
-// Buscar todos os dados
-var buscarDados = false;
-
-
-
-
 app.get('/game', (req, res) => {
    var name = req.query.user_name;
    var id = req.query.user_id;
-   saveGameID = req.query.gameID;
-   
    userId = id;
-
-   if (saveGameID != null) {
-      buscarDados = true;
-   }
-
 
    user_id.push(id);
    user_name.push(name);
+
+
 
    var ships = [{
          'type': 'Aircraft carrier',
@@ -182,6 +143,8 @@ app.get('/game', (req, res) => {
       }
    ];
 
+
+
    res.render('game', {
       name: name,
       id: id,
@@ -189,38 +152,27 @@ app.get('/game', (req, res) => {
    });
 })
 
+
 //var MyGames = require('./views/mygames.vue');
-var lastUpdates = "";
-var lastUpdate = [];
+
 app.get('/mygames', (req, res) => {
 
    var name = req.query.user_name;
    var id = req.query.user_id;
-   //console.log(req.query);
+
    collections = mongoUtils.getDriver();
 
    var games = collections.collection('games').find({
       id: id,
-   }).sort({
-      lastModified: -1
    }).toArray(function (err, result) {
       if (err)
          throw err;
-
-      for (let i = 0; i < result.length; i++) {
-         lastUpdates = timeAgo.format(result[i].lastModified);
-         lastUpdate.push(lastUpdates);
-      }
-
+      console.log(result);
       res.render('mygames.html', {
          name: name,
          id: id,
-         games: result,
-         lastUpdate: lastUpdate
+         games: result
       });
-
-      lastUpdate = [];
-
    });
 
 
@@ -234,6 +186,29 @@ app.get('/mygames', (req, res) => {
 
 
 // Falta depois buscar dados de Vitoria/Derrota por exemplo.
+
+app.get('/profile', (req, res) => {
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({
+      id: id,
+   }).toArray(function (err, result) {
+      if (err)
+         throw err;
+      console.log(result);
+      res.render('profile.html', {
+         name: name,
+         id: id,
+         games: result
+      });
+   });
+
+
+})
 
 io.on('connection', (socket) => {
    console.log('Someone joined the server');
@@ -258,24 +233,73 @@ io.on('connection', (socket) => {
 
       // console.log(players.length);
 
-      console.log("GAMEID" + saveGameID);
-
-
-
-
       if (players.length >= 2) {
 
+         var game = new BattleShip(gameCount++, players[0].id, players[1].id);
 
-         var game;
-
-         if (buscarDados) {
-            game = new BattleShip(saveGameID, players[0].id, players[1].id);
-         } else {
-            game = new BattleShip(gameCount++, players[0].id, players[1].id);
+         var matrix = [];
+         for (var i = 0; i < 10; i++) {
+            matrix[i] = [];
+            for (var j = 0; j < 10; j++) {
+               matrix[i][j] = 0;
+            }
          }
 
 
+         var dados = {};
+         collections = mongoUtils.getDriver();
+         var opponent_id = 0;
+         var opponent_name = "";
 
+         for (let i = 0; i < players.length; i++) {
+            if (user_id[i] != null && opponent_id != null) {
+
+               if (i == 0) {
+                  opponent_id = user_id[i + 1];
+                  opponent_name = user_name[i + 1];
+                  dados = {
+                     "id": user_id[i],
+                     "name": user_name[i],
+                     "opponent_id": opponent_id,
+                     "opponent_name": opponent_name,
+                     "matrix": matrix,
+                     "game_id": game.id,
+                     "game_end": 0,
+                     "won": 0
+                  }
+               }
+               if (i == 1) {
+                  opponent_id = user_id[i - 1];
+                  opponent_name = user_name[i - 1];
+                  dados = {
+                     "id": user_id[i],
+                     "name": user_name[i],
+                     "opponent_id": opponent_id,
+                     "opponent_name": opponent_name,
+                     "matrix": matrix,
+                     "game_id": game.id,
+                     "game_end": 0,
+                     "won": 0,
+
+                  }
+               }
+               collections.collection('games').insertOne(dados), {
+                  $currentDate: {
+                     $type: "date"
+                  }
+               };
+            }
+         }
+
+
+         // var dados = [game.id, ];
+         // io.to('game' + game.id).emit('getOponent', dados);
+
+         user_id = [];
+         user_name = [];
+
+
+         //console.log(game.players);
 
          players[0].leave('espera');
          players[1].leave('espera');
@@ -290,140 +314,7 @@ io.on('connection', (socket) => {
          //console.log(players[0]);
 
 
-
-         if (buscarDados) {
-
-            console.log("TESTE" + user_id[0] + " " + user_id[1]);
-            // ready.push(user_id[0]);
-            // ready.push(user_id[1]);
-
-            io.to('game' + game.id).emit('setReady', game.id);
-
-         }
-
-         // console.log("GAMEEE" + user_id[0] + " " + user_id[1])
-
-         var matrix = [];
-         for (var i = 0; i < 10; i++) {
-            matrix[i] = [];
-            for (var j = 0; j < 10; j++) {
-               matrix[i][j] = 0;
-            }
-         }
-
-
-
-
-         if (!buscarDados) {
-            var dados = {};
-            collections = mongoUtils.getDriver();
-            var opponent_id = 0;
-            var opponent_name = "";
-
-            for (let i = 0; i < players.length; i++) {
-               if (user_id[i] != null && opponent_id != null) {
-
-                  if (i == 0) {
-                     opponent_id = user_id[i + 1];
-                     opponent_name = user_name[i + 1];
-                     dados = {
-                        "id": user_id[i],
-                        "name": user_name[i],
-                        "opponent_id": opponent_id,
-                        "opponent_name": opponent_name,
-                        "matrix": matrix,
-                        "game_id": game.id,
-                        "game_end": 0,
-                        "won": 0
-                     }
-                  }
-                  if (i == 1) {
-                     opponent_id = user_id[i - 1];
-                     opponent_name = user_name[i - 1];
-                     dados = {
-                        "id": user_id[i],
-                        "name": user_name[i],
-                        "opponent_id": opponent_id,
-                        "opponent_name": opponent_name,
-                        "matrix": matrix,
-                        "game_id": game.id,
-                        "game_end": 0,
-                        "won": 0,
-                     }
-                  }
-                  collections.collection('games').insertOne(dados);
-               }
-            }
-         } else {
-
-
-
-
-         }
-
-
-
-
          io.to('game' + game.id).emit('start', game.id);
-
-
-
-         if (buscarDados) {
-
-            var usersList = [user_id[0], user_id[1]];
-
-            collections = mongoUtils.getDriver();
-
-
-
-            var hit = collections.collection('games').find({
-               id: usersList[0],
-               game_id: parseInt(saveGameID)
-            }).toArray(function (err, result) {
-               if (err)
-                  throw err;
-
-               if (result[0]) {
-
-                  console.log("SERVER" + result[0].matrix);
-
-
-                  var dados = [result[0].matrix, usersList[0]];
-                  io.to('game' + game.id).emit('carregar', dados);
-                  // socket.emit("setOpponent", result[0].matrix);
-                  // console.log("CLAUDIO" + result[0].opponent_id);
-                  // io.emit('setOpponent', result[0].opponent_id);
-
-               }
-            });
-
-            var hit2 = collections.collection('games').find({
-               id: usersList[1],
-               game_id: parseInt(saveGameID)
-            }).toArray(function (err, result) {
-               if (err)
-                  throw err;
-
-               if (result[0]) {
-
-                  console.log("SERVER" + result[0].matrix);
-
-
-                  var dados = [result[0].matrix, usersList[1]];
-                  io.to('game' + game.id).emit('carregar', dados);
-                  // socket.emit("setOpponent", result[0].matrix);
-                  // console.log("CLAUDIO" + result[0].opponent_id);
-                  // io.emit('setOpponent', result[0].opponent_id);
-
-               }
-            });
-
-         }
-
-
-         user_id = [];
-         user_name = [];
-
          console.log(io.sockets.adapter.rooms['game' + game.id]);
       }
       //io.emit('update'," ### "+users[socket.id]+" is prepared for battle  ###");
@@ -446,6 +337,9 @@ io.on('connection', (socket) => {
          });
       }
    });
+
+
+
 
    socket.on('getOpponent', function (dados) {
 
@@ -521,9 +415,6 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 0
-                        },
-                        $currentDate: {
-                           lastModified: true,
                         }
                      });
 
@@ -534,9 +425,7 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 1
-                        },
-                        $currentDate: {
-                           lastModified: true,
+
                         }
                      });
 
@@ -556,9 +445,6 @@ io.on('connection', (socket) => {
                }, {
                   $set: {
                      matrix: matriz_adv
-                  },
-                  $currentDate: {
-                     lastModified: true,
                   }
                });
 
@@ -623,9 +509,6 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 0
-                        },
-                        $currentDate: {
-                           lastModified: true,
                         }
                      });
 
@@ -636,9 +519,6 @@ io.on('connection', (socket) => {
                         $set: {
                            game_end: 1,
                            won: 1
-                        },
-                        $currentDate: {
-                           lastModified: true,
                         }
                      });
 
@@ -659,9 +539,6 @@ io.on('connection', (socket) => {
                }, {
                   $set: {
                      matrix: matriz_adv
-                  },
-                  $currentDate: {
-                     lastModified: true,
                   }
                });
 
@@ -704,7 +581,8 @@ io.on('connection', (socket) => {
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
 
-         //collections.collection('games').remove({});
+
+         // collections.collection('games').remove({});
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
@@ -732,9 +610,6 @@ io.on('connection', (socket) => {
             }, {
                $set: {
                   matrix: matriz_sec
-               },
-               $currentDate: {
-                  lastModified: true,
                }
             });
             cells = [];
@@ -768,10 +643,9 @@ io.on('connection', (socket) => {
       ready.push(id);
 
       if (ready.length == 2) {
-         bothReady = true;
+         var bothReady = true;
       }
 
-      
       if (bothReady) {
          var game = users[socket.id].jogo; // aqui obtens a informação do jogo
 
@@ -814,9 +688,9 @@ app.post('/register', function (req, res) {
 
    if (!name || !email || !password) {
       console.log("Incomplete Information");
-      res.render('register.html', {
-         message: 'Incomplete Information',
-         messageClass: 'alert-danger'
+      res.render('register.html',{
+            message: 'Incomplete Information',
+            messageClass: 'alert-danger'
       });
    } else if (password == password2) {
 
@@ -837,21 +711,16 @@ app.post('/register', function (req, res) {
                   "email": email,
                   "password": hashedPassword,
                }
-               collections.collection('users').insertOne({
-                  dados
-               }, {
-                  $currentDate: {
-                     lastModified: true,
-                  }
-               });
 
+               collections.collection('users').insertOne(dados);
+               
                res.redirect('/login');
             } else {
                console.log("Utilizador já  registado");
-               res.render('register.html', {
+               res.render('register.html',{
                   message: 'User already Registered',
                   messageClass: 'alert-danger'
-               });
+            });
             }
          })
       });
@@ -863,8 +732,6 @@ app.post('/register', function (req, res) {
 //rota que trata do pedido para ir para a pagina principal quando sai de um jogo
 //os valores sao passados pela submissao de um formulario com valores hidden na pagina de jogo
 app.post('/mainMenu', (req, res) => {
-   console.log(req.body);
-
    res.render('main', {
       name: req.body.name,
       id: req.body.id,
@@ -885,7 +752,7 @@ app.post('/main', function (req, res) {
          throw err;
 
       if (!result[0]) {
-         res.render('login.html', {
+         res.render('login.html',{
             message: 'No Users were found with this email, try again!',
             messageClass: 'alert-danger'
          });
@@ -901,7 +768,7 @@ app.post('/main', function (req, res) {
                });
             } else {
                console.log("Invalid Password");
-               res.render('login.html', {
+               res.render('login.html',{
                   message: 'Not Successful!!! The Password was invalid, please try again',
                   messageClass: 'alert-danger'
                }); // mostrar mensagem de erro - password incorreta
