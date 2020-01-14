@@ -27,9 +27,23 @@
 
   <div class="nav" v-bind:style="estilo_nav">
 
-    <a href="/mainMenu"><span v-bind:style="estilo_link">{{home}}</span></a>
-    <a href="/mygames"><span v-bind:style="estilo_link">{{jogos}}</span></a>
-    <a href="/profile"><span v-bind:style="estilo_link">{{perfil}}</span></a>
+    <form name="input" action="/mainMenu" method="post" >
+      <input type="hidden" id="user_id" name="id" value="<%= id %>">
+      <input type="hidden" id="name" name="name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{home}}</button></span>
+   </form>
+
+   <form name="input" action="/mygames" method="get" >
+    <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+    <input type="hidden" id="name" name="user_name" value="<%= name %>">
+    <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{jogos}}</button></span>
+    </form>
+
+    <form name="input" action="/profile" method="get" >
+      <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+      <input type="hidden" id="name" name="user_name" value="<%= name %>">
+      <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{perfil}}</button></span>
+   </form>
     <a href="/logout"><span v-bind:style="estilo_link">{{logout}}</span></a>
 
   </div>
@@ -125,7 +139,11 @@
           marginRight: '5%',
           marginLeft: '5%',
           border: '2px solid navy',
-        }
+        },
+        estilo_btn:{
+               backgroundColor:'darkblue',
+               border: 'none'
+            }
       }
     });
     var title = new Vue({

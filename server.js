@@ -81,7 +81,7 @@ app.get('/profile', (req, res) => {
 
    var name = req.query.user_name;
    var id = req.query.user_id;
-   console.log(name + id);
+  // console.log(req.query);
 
    collections = mongoUtils.getDriver();
 
@@ -168,7 +168,7 @@ app.get('/mygames', (req, res) => {
 
    var name = req.query.user_name;
    var id = req.query.user_id;
-
+   //console.log(req.query);
    collections = mongoUtils.getDriver();
 
    var games = collections.collection('games').find({
@@ -206,29 +206,6 @@ app.get('/mygames', (req, res) => {
 
 
 // Falta depois buscar dados de Vitoria/Derrota por exemplo.
-
-app.get('/profile', (req, res) => {
-
-   var name = req.query.user_name;
-   var id = req.query.user_id;
-
-   collections = mongoUtils.getDriver();
-
-   var games = collections.collection('games').find({
-      id: id,
-   }).toArray(function (err, result) {
-      if (err)
-         throw err;
-      console.log(result);
-      res.render('profile.html', {
-         name: name,
-         id: id,
-         games: result
-      });
-   });
-
-
-})
 
 io.on('connection', (socket) => {
    console.log('Someone joined the server');
@@ -675,7 +652,7 @@ io.on('connection', (socket) => {
 
          // console.log(coord[1] + " , " + coord[0]); // x, y
 
-   // collections.collection('games').remove({});
+         //collections.collection('games').remove({});
 
          // Ler matriz da BD aqui
          var teste = collections.collection('games').find({
@@ -833,6 +810,8 @@ app.post('/register', function (req, res) {
 //rota que trata do pedido para ir para a pagina principal quando sai de um jogo
 //os valores sao passados pela submissao de um formulario com valores hidden na pagina de jogo
 app.post('/mainMenu', (req, res) => {
+   console.log(req.body);
+
    res.render('main', {
       name: req.body.name,
       id: req.body.id,
