@@ -130,6 +130,8 @@
         $(document).ready(function () {
             socket = new io();
 
+            socket.on('setReady', setReady);
+
             socket.on('connect', handleConnection);
 
             socket.on('start', handleGameStart);
@@ -219,6 +221,20 @@
             socket.emit('join', $("#ref").val());
         }
 
+
+
+
+        function setReady() {
+            var userID = $("#ref").val(); //id do user
+            socket.emit('pronto', userID);
+            console.log("READY" + userID);
+            shipOnBoard = 14;
+            ready();
+        }
+
+
+
+
         function handleGameStart(game_id) {
             console.log('game is starting' + game_id);
             // alert($("#ref").val());
@@ -235,7 +251,7 @@
             //socket.emit('',$("#ref").val());
 
 
-          
+
 
 
 
@@ -301,17 +317,19 @@
             var matrix = dados[0];
             var user = dados[1];
 
-            console.log("OMGGG");
+            // console.log("OMGGG");
             for (var x = 0; x < 10; x++) {
                 for (var y = 0; y < 10; y++) {
-                    console.log("USER" + user + " - " + $("#ref").val());
+                    // console.log("USER" + user + " - " + $("#ref").val());
                     // console.log("X" + x + " Y" + y + " - " + matrix[x][y]);
                     if (user != $("#ref").val()) {
-                        console.log("ELE");
-                        opponent[x][y] = matrix[x][y];
+                        // console.log("ELE");
+                        if (matrix[y][x] != 1) {
+                            opponent[x][y] = matrix[y][x];
+                        }
                     } else {
-                        console.log("EU");
-                        player[x][y] = matrix[x][y];
+                        // console.log("EU");
+                        player[x][y] = matrix[y][x];
                     }
                 }
             }
