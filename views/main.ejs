@@ -58,6 +58,12 @@
             <input type="hidden" id="name" name="user_name" value="<%= name %>">
             <button type="submit" id="btn btn-primary"  v-bind:style="estilo_buttons">{{start}}</button>
          </form>
+
+         <form action="/ranking">
+            <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
+            <input type="hidden" id="name" name="user_name" value="<%= name %>">
+            <button type="submit" id="btn btn-primary"  v-bind:style="estilo_buttons">{{ranking}}</button>
+         </form>
         </div>
          
          
@@ -87,6 +93,7 @@
              data:{
                 jogos: 'My Games',
                 start: 'New Game',
+                ranking : 'Ranking',
                 estilo_buttons:{
                      display: 'block',
                      width:'50%',
