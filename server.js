@@ -137,7 +137,7 @@ app.get('/game', (req, res) => {
    var name = req.query.user_name;
    var id = req.query.user_id;
    saveGameID = req.query.gameID;
-   
+
    userId = id;
 
    if (saveGameID != null) {
@@ -352,6 +352,16 @@ io.on('connection', (socket) => {
                      }
                   }
                   collections.collection('games').insertOne(dados);
+
+
+                  collections.collection('games').updateOne({
+                     id: user_id[i],
+                     game_id: game.id
+                  }, {
+                     $currentDate: {
+                        lastModified: true,
+                     }
+                  });
                }
             }
          } else {
@@ -759,6 +769,8 @@ io.on('connection', (socket) => {
       users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
       ready = [];
       bothReady = false;
+      // buscarDados = false;
+
       //redireciona para a pagina main; 
       //efetuado simultaneamente atraves de um pedido POST
    });
@@ -771,7 +783,7 @@ io.on('connection', (socket) => {
          bothReady = true;
       }
 
-      
+
       if (bothReady) {
          var game = users[socket.id].jogo; // aqui obtens a informação do jogo
 
@@ -837,13 +849,7 @@ app.post('/register', function (req, res) {
                   "email": email,
                   "password": hashedPassword,
                }
-               collections.collection('users').insertOne({
-                  dados
-               }, {
-                  $currentDate: {
-                     lastModified: true,
-                  }
-               });
+               collections.collection('users').insertOne(dados);
 
                res.redirect('/login');
             } else {
