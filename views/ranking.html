@@ -66,62 +66,25 @@
   </div>
   <div class="container">
     <div class="row">
-      <% for(i=0; i<games.length; i++) { %>
-      <% if(games[i].opponent_name != null && games[i].game_end == 0) { %>
-      <div class="card text-center">
-        <div class="card-header">
-          Keep playing
-        </div>
-        <div class="card-body">
-          <h5 class="card-title"><% games[i].opponent_name %></h5>
-          <p class="card-text">You are currently playing with <%- games[i].opponent_name %></p>
-          <!-- user_id=5e16277158c64f2090088a52&user_name=Alberto&gameID=2 -->
-          <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].name %>&gameID=<%- games[i].game_id %>"
-            class="btn btn-warning">Keep
-            playing</a>
-        </div>
-        <div class="card-footer text-muted">
-          <%- lastUpdate[i] %>
-        </div>
-      </div>
-      <br>
-      <% } %>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Victories</th>
+          </tr>
+        </thead>
+        <% for(i=0; i<ranking.length; i++) { %>
+        <tbody>
+          <tr>
+            <th scope="row"><%- i +1 %></th>
+            <td><%- ranking[0][i] %></td>
+            <td><%- ranking[1][i] %></td>
+          </tr>
 
-      <% if(games[i].opponent_name != null && games[i].game_end == 1 && games[i].won == 1) { %>
-      <div class="card text-center">
-        <div class="card-header">
-          You won
-        </div>
-        <div class="card-body">
-          <p class="card-text">You won a game against <%- games[i].opponent_name %>
-          </p>
-          <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].name %>&gameID=<%- games[i].game_id %>"
-            class="btn btn-success">See game</a>
-        </div> 
-        <div class="card-footer text-muted">
-          <%- lastUpdate[i] %>
-        </div>
-      </div>
-      <br>
-      <% } %>
-      <% if(games[i].opponent_name != null && games[i].game_end == 1 && games[i].won == 0) { %>
-      <div class="card text-center">
-        <div class="card-header">
-          You lost
-        </div>
-        <div class="card-body">
-          <h5 class="card-title"><% games[i].opponent_name %></h5>
-          <p class="card-text">You lost a game against <%- games[i].opponent_name %></p>
-          <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].name %>&gameID=<%- games[i].game_id %>"
-            class="btn btn-danger">See game</a>
-        </div>
-        <div class="card-footer text-muted">
-          <%- lastUpdate[i] %>
-        </div>
-      </div>
-      <br>
-      <% } %>
-      <% } %>
+        </tbody>
+        <% } %>
+      </table>
     </div>
   </div>
 
@@ -174,7 +137,7 @@
     var games = new Vue({
       el: '.games',
       data: {
-        jogos: 'My Games',
+        jogos: 'Ranking',
         estilo_games: {
           fontSize: '30px',
           margin: '30px auto',
