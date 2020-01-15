@@ -145,8 +145,7 @@ app.get('/game', (req, res) => {
 
    if (saveGameID != null) {
       buscarDados = true;
-   }
-   else {
+   } else {
       buscarDados = false;
    }
 
@@ -227,13 +226,59 @@ app.get('/mygames', (req, res) => {
       lastUpdate = [];
 
    });
+});
+
+var ranking = [];
+app.get('/ranking', (req, res) => {
+
+   var name = req.query.user_name;
+   var id = req.query.user_id;
+   //console.log(req.query);
+   collections = mongoUtils.getDriver();
+
+   var games = collections.collection('games').find({}).toArray(function (err, result) {
+      if (err)
+         throw err;
+
+      console.log(result);
+      for (let i = 0; i < result.length; i++) {
+         if (result[i].won == 1) {
+            ranking.push(result[i].name);
+         }
+      }
+
+      function foo(ranking) {
+         var a = [],
+            b = [],
+            prev;
+
+         ranking.sort();
+         for (var i = 0; i < ranking.length; i++) {
+            if (ranking[i] !== prev) {
+               a.push(ranking[i]);
+               b.push(1);
+            } else {
+               b[b.length - 1]++;
+            }
+            prev = ranking[i];
+         }
+
+         return [a, b];
+      }
+      var rankings = foo(ranking);
+      console.log(rankings[0].length);
+      
 
 
+      res.render('ranking.html', {
+         name: name,
+         id: id,
+         ranking : rankings
+      });
 
-   // res.render('mygames.html');
+   });
 
-   // res.sendFile(__dirname + "/views" + '/mygames.html');
-
+   ranking = [];
 });
 
 
