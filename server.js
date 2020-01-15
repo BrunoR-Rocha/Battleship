@@ -140,7 +140,9 @@ app.get('/game', (req, res) => {
    if (saveGameID != null) {
       buscarDados = true;
    }
-
+   else {
+      buscarDados = false;
+   }
 
    user_id.push(id);
    user_name.push(name);

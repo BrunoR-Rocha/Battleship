@@ -74,8 +74,7 @@
         </div>
         <div class="card-body">
           <h5 class="card-title"><% games[i].opponent_name %></h5>
-          <p class="card-text">You are currently playing with <%- games[i].opponent_name %> your name is
-            <%- games[i].name %></p>
+          <p class="card-text">You are currently playing with <%- games[i].opponent_name %></p>
           <!-- user_id=5e16277158c64f2090088a52&user_name=Alberto&gameID=2 -->
           <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].name %>&gameID=<%- games[i].game_id %>"
             class="btn btn-warning">Keep
@@ -94,7 +93,7 @@
           You won
         </div>
         <div class="card-body">
-          <p class="card-text">You won a game against <%- games[i].opponent_name %> your name is <%- games[i].name %>
+          <p class="card-text">You won a game against <%- games[i].opponent_name %>
           </p>
           <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].name %>&gameID=<%- games[i].game_id %>"
             class="btn btn-success">See game</a>
