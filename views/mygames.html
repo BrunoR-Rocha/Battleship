@@ -94,7 +94,8 @@
         </div>
         <div class="card-body">
           <p class="card-text">You won a game against <%- games[i].opponent_name %></p>
-          <a href="#" class="btn btn-success">See game</a>
+          <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].user_name %>&gameID=<%- games[i].game_id %>"
+            class="btn btn-success">See game</a>
         </div>
         <div class="card-footer text-muted">
           <%- lastUpdate[i] %>
@@ -110,7 +111,8 @@
         <div class="card-body">
           <h5 class="card-title"><% games[i].opponent_name %></h5>
           <p class="card-text">You lost a game against <%- games[i].opponent_name %></p>
-          <a href="#" class="btn btn-danger">See game</a>
+          <a href="/game?user_id=<%- games[i].id %>&user_name=<%- games[i].user_name %>&gameID=<%- games[i].game_id %>"
+            class="btn btn-danger">See game</a>
         </div>
         <div class="card-footer text-muted">
           <%- lastUpdate[i] %>
