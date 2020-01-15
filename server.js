@@ -130,9 +130,6 @@ var saveGameID = 0;
 // Buscar todos os dados
 var buscarDados = false;
 
-
-
-
 app.get('/game', (req, res) => {
    var name = req.query.user_name;
    var id = req.query.user_id;
@@ -143,7 +140,9 @@ app.get('/game', (req, res) => {
    if (saveGameID != null) {
       buscarDados = true;
    }
-
+   else {
+      buscarDados = false;
+   }
 
    user_id.push(id);
    user_name.push(name);
@@ -769,8 +768,7 @@ io.on('connection', (socket) => {
       users[socket.id].numero = null; // deixa de ter um numero de jogador em jogo
       ready = [];
       bothReady = false;
-      // buscarDados = false;
-
+      saveGameID = 0;
       //redireciona para a pagina main; 
       //efetuado simultaneamente atraves de um pedido POST
    });
