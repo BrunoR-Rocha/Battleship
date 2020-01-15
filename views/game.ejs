@@ -163,6 +163,10 @@
 
             socket.on('alert', handleAlert);
 
+            socket.on('sound', function(sound){
+                sound.play();
+            });
+
 
         });
 

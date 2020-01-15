@@ -605,8 +605,6 @@ io.on('connection', (socket) => {
          console.log(shot[1] + "id do oponente");
          console.log(shot[2]);
 
-         sound.play();
-
          var matriz_adv = [];
 
          var hit = collections.collection('games').find({
@@ -626,6 +624,8 @@ io.on('connection', (socket) => {
 
                if (matriz_adv[shot[0].x][shot[0].y] == 1) {
                   counter1++ //adiciona a contador
+
+                  io.to(socket.id).emit('sound', {audio: './sounds/bomb.mp3©'});
 
                   matriz_adv[shot[0].x][shot[0].y] = 2;
 
