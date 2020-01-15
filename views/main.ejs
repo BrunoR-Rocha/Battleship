@@ -1,39 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-   <title>Battleship Game</title>
-   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-   <script src="/socket.io/socket.io.js"></script>
-</head>
-<body>
-
-   <div class="nav" v-bind:style="estilo_nav">
-
-      <form name="input" action="/mainMenu" method="post" >
-         <input type="hidden" id="user_id" name="id" value="<%= id %>">
-         <input type="hidden" id="name" name="name" value="<%= name %>">
-         <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{home}}</button></span>
-      </form>
-         
-      <form name="input" action="/mygames" method="get" >
-         <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
-         <input type="hidden" id="name" name="user_name" value="<%= name %>">
-         <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{jogos}}</button></span>
-         </form>
-
-      <form name="input" action="/profile" method="get" >
-         <input type="hidden" id="user_id" name="user_id" value="<%= id %>">
-         <input type="hidden" id="name" name="user_name" value="<%= name %>">
-         <span v-bind:style="estilo_link"><button type="submit" v-bind:style="estilo_btn">{{perfil}}</button></span>
-      </form>
-
-      <a href="/logout"><span v-bind:style="estilo_link">{{logout}}</span></a>
-  
-    </div>
+<%- include ('./partials/head.ejs')%>
 
     <div class="container">
       <div class="title">
