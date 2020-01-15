@@ -19,12 +19,18 @@ const bcrypt = require("bcryptjs");
 
 var BattleShip = require('./app/Game');
 
+const {Howl, Howler} = require('howler');
+
+var sound = new Howl({
+   src: ['./sounds/bomb.mp3']
+ });
+
 const PORT = 3000;
 
-import TimeAgo from 'javascript-time-ago';
+var TimeAgo = require('javascript-time-ago');
 
 // Load locale-specific relative date/time formatting rules.
-import en from 'javascript-time-ago/locale/en'
+var en = require('javascript-time-ago/locale/en');
 
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(en);
@@ -599,6 +605,8 @@ io.on('connection', (socket) => {
 
          console.log(shot[1] + "id do oponente");
          console.log(shot[2]);
+
+         sound.play();
 
          var matriz_adv = [];
 
